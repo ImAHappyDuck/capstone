@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 import pandas as pd
 import pandas.testing as pd_testing
+import matplotlib.pyplot as plt
 
 # ensure that the current directory is in the Python path
 import os
@@ -19,6 +20,20 @@ sys.path.append(scriptdir)
 
 
 from data_loader import load_data
+import numpy as np
 
-df = load_data("ImAHappyDuck/capstone/Pipeline/example_iris.csv")
-print(df)
+col = {
+    "sepal-length": np.float64,
+    "sepal-width": np.float64,
+    "petal-length": np.float64,
+    "petal-width": np.float64,
+    "species": str  # Assuming 'species' is categorical
+}
+
+df = load_data("C:\\Users\BOSSCJ21\Downloads\DSCapstone\capstone\Pipeline\example_iris.csv",columns=col, missing='drop')
+# print(df)
+
+from data_inspector import make_plot, make_density_plot, make_boxplot, make_barplot
+
+make_plot(df, 'sepal-length', 'make_barplot', [], {}).show()
+# plt.show()
