@@ -88,16 +88,16 @@ def merge_uncommon(items: Sequence[str], default: str = 'OTHER',
     if max_categories is not None:
         sorted_categories = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)
         keep = {cat for cat, _ in sorted_categories[:max_categories]}
-        print(f"Keep Categories (max_categories): {keep}")
+        # print(f"Keep Categories (max_categories): {keep}")
     elif min_count is not None:
         keep = {cat for cat, count in category_counts.items() if count >= min_count}
-        print(f"Keep Categories (min_count): {keep}")
+        # print(f"Keep Categories (min_count): {keep}")
     elif min_pct is not None:
         min_required = total_items * min_pct
         keep = {cat for cat, count in category_counts.items() if count >= min_required}
-        print(f"Keep Categories (min_pct): {keep}")
+        # print(f"Keep Categories (min_pct): {keep}")
     result = [item if item in keep else default for item in items]
-    print(f"Result: {result}")
+    # print(f"Result: {result}")
     return result
     
 
