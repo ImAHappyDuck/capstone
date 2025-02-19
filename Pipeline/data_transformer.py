@@ -51,19 +51,14 @@ def z_score_norm(items: Sequence[int|float]) -> Sequence[float]:
 
 def min_max_norm(items: Sequence[int|float]) -> Sequence[float]:
     """Scales all items into the range [0, 1]"""
-    min_value = min(items)
-    max_value = max(items)
-    range_value = max_value - min_value
-    
-    if range_value == 0:  # Handle case where all values are the same
+    minV =min(items)
+    maxV= max(items)
+    range_value = maxV - minV
+    if range_value == 0:  
         return [0.0] * len(items)
     
-    return [(item - min_value) / range_value for item in items]
-    # scaled = []
-    # max_value = max(items)
-    # for item in items:
-    #     scaled.append(item/max_value)
-    # return scaled
+    return [(item - minV) / range_value for item in items]
+
 
 def merge_uncommon(items: Sequence[str], default: str = 'OTHER',
                    max_categories: int|None = None, 
@@ -82,9 +77,29 @@ def merge_uncommon(items: Sequence[str], default: str = 'OTHER',
 
     returns a transformed version of items where uncommon labels are replaced with the default value
     """
-    # NOTE: Exactly ONE of the keyword arguments should be specified!
-    #       More or less should result in an exception!
-    raise NotImplementedError('TODO: Implement this function')
+    args = sum(arg is not None for arg in [max_categories, min_count, min_pct])
+    if args != 1:
+        raise ValueError("Exactly one category type (max_categories, min_count, min_pct) must be specified")
+
+    category_counts = count_categories(items)
+    total_items = len(items)
+    keep = set()
+
+    if max_categories is not None:
+        sorted_categories = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)
+        keep = {cat for cat, _ in sorted_categories[:max_categories]}
+        print(f"Keep Categories (max_categories): {keep}")
+    elif min_count is not None:
+        keep = {cat for cat, count in category_counts.items() if count >= min_count}
+        print(f"Keep Categories (min_count): {keep}")
+    elif min_pct is not None:
+        min_required = total_items * min_pct
+        keep = {cat for cat, count in category_counts.items() if count >= min_required}
+        print(f"Keep Categories (min_pct): {keep}")
+    result = [item if item in keep else default for item in items]
+    print(f"Result: {result}")
+    return result
+    
 
 def make_named_bins(items: Sequence[int|float], cut: str, names: Sequence[str]):
     """Bins items using the specified strategy and represents each with one of the given names"""
