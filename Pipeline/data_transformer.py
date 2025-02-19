@@ -51,19 +51,14 @@ def z_score_norm(items: Sequence[int|float]) -> Sequence[float]:
 
 def min_max_norm(items: Sequence[int|float]) -> Sequence[float]:
     """Scales all items into the range [0, 1]"""
-    min_value = min(items)
-    max_value = max(items)
-    range_value = max_value - min_value
-    
-    if range_value == 0:  # Handle case where all values are the same
+    min =min(items)
+    max= max(items)
+    range_value = max - min
+    if range_value == 0:  
         return [0.0] * len(items)
     
     return [(item - min_value) / range_value for item in items]
-    # scaled = []
-    # max_value = max(items)
-    # for item in items:
-    #     scaled.append(item/max_value)
-    # return scaled
+
 
 def merge_uncommon(items: Sequence[str], default: str = 'OTHER',
                    max_categories: int|None = None, 
