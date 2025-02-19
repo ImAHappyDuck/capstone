@@ -104,7 +104,11 @@ def merge_uncommon(items: Sequence[str], default: str = 'OTHER',
 def make_named_bins(items: Sequence[int|float], cut: str, names: Sequence[str]):
     """Bins items using the specified strategy and represents each with one of the given names"""
     # HINT: you should make use of the _find_bins function defined below
-    raise NotImplementedError('TODO: Implement this function')
+    bin_count = len(names)
+    if bin_count == 0:
+        raise ValueError("There must be at least one bin name.")
+    bin_nums = _find_bins(items, cut, bin_count)
+    return [names[bin_num] for bin_num in bin_nums]
 
 def make_mean_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int|float]:
     """Bins items using the specified cut strategy and represents each bin with its mean"""
