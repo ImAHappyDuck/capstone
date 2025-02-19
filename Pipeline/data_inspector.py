@@ -39,8 +39,18 @@ def make_plot(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwa
 
 def make_density_plot(data: Sequence[int|float]) -> Image.Image:
     """Create a density to show the distribution of a variable."""
-    # NOTE: the get_image function may be helpful here converting the current matplotlib plot to an image
-    raise NotImplementedError('TODO: Implement this function')
+    plt.figure(figsize=(6, 4))  
+    plt.hist(data, bins=20, density=True, color="blue", alpha=0.6, edgecolor="black")  # Density histogram
+    plt.xlabel("Value")
+    plt.ylabel("Density")
+    plt.title("Density Plot")
+    return get_image()  
+
+
+
+
+
+
 
 def make_boxplot(data: Sequence[int|float]) -> Image.Image:
     """Create a boxplot to show the distribution of a variable."""
