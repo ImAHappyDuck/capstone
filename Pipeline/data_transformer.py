@@ -5,6 +5,7 @@ from typing import Sequence, Callable, Any
 
 import os
 import sys
+import numpy as np
 scriptdir = os.path.abspath(os.path.dirname(__file__))
 if scriptdir not in sys.path: sys.path.append(scriptdir)
 from data_inspector import count_categories
@@ -89,8 +90,23 @@ def make_mean_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequ
 
 def make_median_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int|float]:
     """Bins items using the specified cut strategy and represents each bin with its median"""
-    # HINT: you should make use of the _find_bins function defined below
-    raise NotImplementedError('TODO: Implement this function')
+    if cut == 'equal-width':
+        min_val, max_val = min(items), max(items)
+        boundaries = [(x, x + (max_val - min_val) / bin_count) for x in np.linspace(min_val, max_val, bin_count)]
+    elif cut == 'equal-frequency':
+        sorted_items = sorted(items)
+        bin_size = len(items) // bin_count
+        boundaries = [(sorted_items[i * bin_size], sorted_items[(i + 1) * bin_size - 1]) for i in range(bin_count)]
+    else:
+        raise ValueError(f"Unknown cut strategy: {cut}")
+    bins = [[] for _ in range(bin_count)]
+    for item in items:
+        bin_num = _find_bin(item, boundaries)
+        bins[bin_num].append(item)
+    
+    bin_medians = [np.median(bin_items) for bin_items in bins]
+    
+    return bin_medians
 
 def make_min_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int|float]:
     """Bins items using the specified cut strategy and represents each bin with its minimum value"""
