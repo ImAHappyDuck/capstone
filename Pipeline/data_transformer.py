@@ -41,11 +41,20 @@ def transform_feature(df: pd.DataFrame, col_name: str, action: str, args: list[A
 
 def z_score_norm(items: Sequence[int|float]) -> Sequence[float]:
     """Translates all values into standard deviations above and below the mean"""
-    raise NotImplementedError('TODO: Implement this function')
+    z_scores = []
+    mean_value = mean(items)
+    stdev_value = stdev(items)
+    for item in items:
+        z_scores.append((item - mean_value)/stdev_value)
+    return z_scores
 
 def min_max_norm(items: Sequence[int|float]) -> Sequence[float]:
     """Scales all items into the range [0, 1]"""
-    raise NotImplementedError('TODO: Implement this function')
+    scaled = []
+    max_value = max(items)
+    for item in items:
+        scaled.append(item/max_value)
+    return scaled
 
 def merge_uncommon(items: Sequence[str], default: str = 'OTHER',
                    max_categories: int|None = None, 
