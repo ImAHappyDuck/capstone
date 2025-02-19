@@ -38,14 +38,7 @@ def make_plot(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwa
     return plot(df[col_name], *args, **kwargs) # type: ignore
 
 def make_density_plot(data: Sequence[int|float]) -> Image.Image:
-    """Create a density to show the distribution of a variable."""
-    plt.figure(figsize=(6, 4))  
-    plt.hist(data, bins=20, density=True, color="blue", alpha=0.6, edgecolor="black")  # Density histogram
-    plt.xlabel("Value")
-    plt.ylabel("Density")
-    plt.title("Density Plot")
-    return get_image()  
-
+    return sns.kdeplot(data).get_figure()
 
 
 
@@ -54,16 +47,24 @@ def make_density_plot(data: Sequence[int|float]) -> Image.Image:
 
 def make_boxplot(data: Sequence[int|float]) -> Image.Image:
     """Create a boxplot to show the distribution of a variable."""
-    # NOTE: the get_image function may be helpful here converting the current matplotlib plot to an image
-    raise NotImplementedError('TODO: Implement this function')
+    plt.figure(figsize=(6, 4))
+    sns.boxplot(data=data, color="skyblue")
+    plt.xlabel("Value")
+    plt.title("Boxplot")
+    return get_image()
 
 def make_barplot(data: Sequence[str], name:str|None=None, order:list[str]|None=None) -> Image.Image:
-    """
-    Create a bar plot to show the distribution of a binary, categorical, or ordinal variable
-    If an order is provided, counts are shown in that order on the x-axis, otherwise alphabetical order is used.
-    """
-    # NOTE: the get_image function may be helpful here converting the current matplotlib plot to an image
-    raise NotImplementedError('TODO: Implement this function')
+    category_counts = count_categories(data)
+    if order:
+        category_counts = {category: category_counts[category] for category in order if category in category_counts}
+    else:
+        category_counts = dict(sorted(category_counts.items()))  # Sort alphabetically
+    plt.figure(figsize=(12, 6))
+    sns.barplot(x=list(category_counts.keys()), y=list(category_counts.values()), color='skyblue')
+    plt.xlabel(name if name else "Category")
+    plt.ylabel("Count")
+    plt.title(f"Bar Plot of {name if name else 'Categories'}")
+    return get_image()
 
 def count_categories(items: Iterable[K]) -> dict[K, int]:
     """Returns a dictionary mapping each unique item in items to the number of times it appears"""
