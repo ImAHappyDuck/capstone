@@ -38,16 +38,24 @@ def remove_missing(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
 
 def replace_missing_with_value(df: pd.DataFrame, col_name: str, value: Any) -> Iterable[Any]:
     """Returns a modified version of the given column where missing values are filled with the given static value"""
-    raise NotImplementedError('TODO: Implement this function')
+    df[col_name] = df[col_name].fillna(value)
+    return df
 
 def replace_missing_with_mode(df: pd.DataFrame, col_name: str) -> Iterable[Any]:
     """Returns a modified version of the given column where missing values are filled with the most common value"""
-    raise NotImplementedError('TODO: Implement this function')
+    # if there is one mode it will be returned, if there are two the first is returned
+    value = df[col_name].mode()[0]
+    df[col_name].fillna(value)
+    return df
 
 def replace_missing_with_mean(df: pd.DataFrame, col_name: str) -> Iterable[Any]:
     """Returns a modified version of the given column where missing values are filled with the mean value"""
-    raise NotImplementedError('TODO: Implement this function')
+    value = df[col_name].mean()
+    df[col_name] = df[col_name].fillna(value)
+    return df
 
 def replace_missing_with_median(df: pd.DataFrame, col_name: str) -> Iterable[Any]:
-    """Returns a modified version of the given column where missing values are filled with the median value"""
-    raise NotImplementedError('TODO: Implement this function')
+    """Returns a modified version of the given column where missing values are filled with the mean value"""
+    value = df[col_name].median()
+    df[col_name] = df[col_name].fillna(value)
+    return df
