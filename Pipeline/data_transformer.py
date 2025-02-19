@@ -103,17 +103,28 @@ def merge_uncommon(items: Sequence[str], default: str = 'OTHER',
 
 def make_named_bins(items: Sequence[int|float], cut: str, names: Sequence[str]):
     """Bins items using the specified strategy and represents each with one of the given names"""
-    # HINT: you should make use of the _find_bins function defined below
+    # get bin_count and check if too few
     bin_count = len(names)
     if bin_count == 0:
-        raise ValueError("There must be at least one bin name.")
+        raise ValueError("Too few bins.")
+    # use find bins to get the bin numbers
     bin_nums = _find_bins(items, cut, bin_count)
+    # return the respective names for each bin number
     return [names[bin_num] for bin_num in bin_nums]
 
 def make_mean_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int|float]:
     """Bins items using the specified cut strategy and represents each bin with its mean"""
-    # HINT: you should make use of the _find_bins function defined below
-    raise NotImplementedError('TODO: Implement this function')
+    # get bin numbers for each item
+    bin_nums = _find_bins(items, cut, bin_count)
+    # create bins and add the respective items to each bin
+    bins = [[] for _ in range(bin_count)]
+    for item, bin_num in zip(items, bin_nums):
+        bins[bin_num].append(item)
+    # get the means of the items in each bin
+    bin_means = [mean(bin_items) for bin_items in bins]
+    # create a list of the mean for each bin number
+    mean_bins = [bin_means[bin_num] for bin_num in bin_nums]
+    return mean_bins
 
 def make_median_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int|float]:
     """Bins items using the specified cut strategy and represents each bin with its median"""
