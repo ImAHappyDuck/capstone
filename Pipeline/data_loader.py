@@ -11,8 +11,10 @@ def load_data(path: str, columns: dict[str,DTypeLike], missing: dict[str,set[str
 
     returns a DataFrame loaded from the filepath given with the specified columns and types
     """
-    raise NotImplementedError('TODO: Implement this function')
+    df = pd.read_csv(path,dtype=columns,na_values=missing,usecols=columns.keys())
+    return df
+    
 
 def save_data(df: pd.DataFrame, path: str) -> None:
     """Saves the transformed dataset into the specified output file"""
-    raise NotImplementedError('TODO: Implement this function')
+    df.to_csv(path,index=False)
