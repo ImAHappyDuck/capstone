@@ -118,11 +118,12 @@ def make_mean_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequ
     bin_nums = _find_bins(items, cut, bin_count)
     # create bins and add the respective items to each bin
     bins = [[] for _ in range(bin_count)]
-    for item, bin_num in zip(items, bin_nums):
-        bins[bin_num].append(item)
+    
+    for i, bin_num in enumerate(bin_nums):
+        bins[bin_num].append(items[i])
     # get the means of the items in each bin
     bin_means = [mean(bin_items) for bin_items in bins]
-    # create a list of the mean for each bin number
+    # return the mean of the respective bin for each item
     mean_bins = [bin_means[bin_num] for bin_num in bin_nums]
     return mean_bins
 
