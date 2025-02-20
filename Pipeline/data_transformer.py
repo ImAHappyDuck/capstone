@@ -99,7 +99,18 @@ def merge_uncommon(items: Sequence[str], default: str = 'OTHER',
     result = [item if item in keep else default for item in items]
     # print(f"Result: {result}")
     return result
-    
+
+def _find_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int]:
+    """Bins the items and returns a sequence of bin numbers in the range [0,bin_count)"""
+    # identify the bin cutoffs based on strategy
+    if cut == 'width':
+        boundaries = _get_equal_width_cuts(items, bin_count)
+    elif cut == 'freq':
+        boundaries = _get_equal_frequency_cuts(items, bin_count)
+    else:
+        raise ValueError(f"Unrecognized bin cut strategy: {cut}")
+    # determine the bin of each item using those cutoffs and return the list of bins
+    return [_find_bin(item, boundaries) for item in items]
 
 def make_named_bins(items: Sequence[int|float], cut: str, names: Sequence[str]):
     """Bins items using the specified strategy and represents each with one of the given names"""
@@ -136,10 +147,8 @@ def make_median_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Se
     """Bins items using the specified cut strategy and represents each bin with its median"""
     bin_nums = _find_bins(items, cut, bin_count)
     
-    # Create empty bins
+    # Create and populate bins
     bins = [[] for _ in range(bin_count)]
-    
-    # Assign items to their respective bins
     for i, bin_num in enumerate(bin_nums):
         bins[bin_num].append(items[i])
     
@@ -147,20 +156,18 @@ def make_median_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Se
     bin_medians = []
     for bin_items in bins:
         if bin_items:
-            # Sort the bin items and find the middle value
             sorted_items = sorted(bin_items)
             n = len(sorted_items)
             if n % 2 == 0:
-                # If even number of items, average the middle two
-                bin_medians.append((sorted_items[n//2-1] + sorted_items[n//2]) / 2)
+                median = (sorted_items[n//2-1] + sorted_items[n//2]) / 2
             else:
-                # If odd number of items, take the middle one
-                bin_medians.append(sorted_items[n//2])
+                median = sorted_items[n//2]
+            bin_medians.append(median)
         else:
-            # Handle empty bins if they occur
             bin_medians.append(0.0)
     
-    return bin_medians
+    # Return each original item replaced with its bin's median
+    return [bin_medians[bin_num] for bin_num in bin_nums]
 
 
 
@@ -170,42 +177,37 @@ def make_median_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Se
 
 def make_min_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int|float]:
     """Bins items using the specified cut strategy and represents each bin with its minimum value"""
-    if cut == 'equal-width':
-        min_val, max_val = min(items), max(items)
-        boundaries = [(x, x + (max_val - min_val) / bin_count) for x in np.linspace(min_val, max_val, bin_count)]
-    elif cut == 'equal-frequency' or cut == 'freq':  
-        sorted_items = sorted(items)
-        bin_size = len(items) // bin_count
-        boundaries = [(sorted_items[i * bin_size], sorted_items[(i + 1) * bin_size - 1]) for i in range(bin_count)]
-    else:
-        raise ValueError(f"Unknown cut strategy: {cut}")
+    bin_nums = _find_bins(items, cut, bin_count)
     
+    # Create and populate bins
     bins = [[] for _ in range(bin_count)]
-    for item in items:
-        bin_num = _find_bin(item, boundaries)
-        bins[bin_num].append(item)
+    for i, bin_num in enumerate(bin_nums):
+        bins[bin_num].append(items[i])
     
-    bin_mins = [min(bin_items) for bin_items in bins]
-    return bin_mins
+    # Calculate minimum for each bin
+    bin_mins = [min(bin_items) if bin_items else float('inf') for bin_items in bins]
+    
+    # Return each original item replaced with its bin's minimum
+    return [bin_mins[bin_num] for bin_num in bin_nums]
 
 
 def make_max_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int|float]:
     """Bins items using the specified cut strategy and represents each bin with its maximum value"""
-    # HINT: you should make use of the _find_bins function defined below
-    raise NotImplementedError('TODO: Implement this function')
+    bin_nums = _find_bins(items, cut, bin_count)
+    
+    # Create and populate bins
+    bins = [[] for _ in range(bin_count)]
+    for i, bin_num in enumerate(bin_nums):
+        bins[bin_num].append(items[i])
+    
+    # Calculate maximum for each bin
+    bin_maxs = [max(bin_items) if bin_items else float('-inf') for bin_items in bins]
+    
+    # Return each original item replaced with its bin's maximum
+    return [bin_maxs[bin_num] for bin_num in bin_nums]
 
-def _find_bins(items: Sequence[int|float], cut: str, bin_count: int) -> Sequence[int]:
-    """Bins the items and returns a sequence of bin numbers in the range [0,bin_count)"""
-    # identify the bin cutoffs based on strategy
-    if cut == 'width':
-        boundaries = _get_equal_width_cuts(items, bin_count)
-    elif cut == 'freq':
-        boundaries = _get_equal_frequency_cuts(items, bin_count)
-    else:
-        raise ValueError(f"Unrecognized bin cut strategy: {cut}")
-    # determine the bin of each item using those cutoffs and return the list of bins
-    return [_find_bin(item, boundaries) for item in items]
 
+   
 def _find_bin(item: int|float, boundaries: list[tuple[float,float]]) -> int:
     """Assigns a given item to one of the bins defined by the given boundaries bin_min <= x < bin_max"""
     # check edge cases outside the range of the bins
