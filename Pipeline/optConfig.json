@@ -1,0 +1,113 @@
+{
+    "raw_dataset_path": "optData.csv",
+    "clean_dataset_path": "cleaned_optData.csv",
+    "plot_directory_path": "plots",
+    "attributes": {
+      "date": {
+        "type": "nominal"
+      },
+      "act_symbol": {
+        "type": "nominal"
+      },
+      "expiration": {
+        "type": "nominal"
+      },
+      "strike": {
+        "type": "real"
+      },
+      "call_put": {
+        "type": "nominal"
+      },
+      "bid": {
+        "type": "real"
+      },
+      "ask": {
+        "type": "real"
+      },
+      "vol": {
+        "type": "real"
+      },
+      "delta": {
+        "type": "real"
+      },
+      "gamma": {
+        "type": "real"
+      },
+      "theta": {
+        "type": "real"
+      },
+      "vega": {
+        "type": "real"
+      },
+      "rho": {
+        "type": "real"
+      }
+    },
+    "cleaning": [
+      {
+        "attribute": "date",
+        "missing_strategy": "remove_missing"
+      },
+      {
+        "attribute": "act_symbol",
+        "missing_strategy": "remove_missing"
+      },
+      {
+        "attribute": "expiration",
+        "missing_strategy": "remove_missing"
+      },
+      {
+        "attribute": "strike",
+        "missing_strategy": "remove_missing"
+      },
+      {
+        "attribute": "call_put",
+        "missing_strategy": "remove_missing"
+      },
+      {
+        "attribute": "bid",
+        "missing_strategy": "remove_missing"
+      },
+      {
+        "attribute": "ask",
+        "missing_strategy": "remove_missing"
+      },
+      {
+        "attribute": "vol",
+        "missing_strategy": "remove_missing"
+      },
+      {
+        "attribute": "delta",
+        "missing_strategy": "replace_missing_with_mean"
+      },
+      {
+        "attribute": "gamma",
+        "missing_strategy": "replace_missing_with_mean"
+      },
+      {
+        "attribute": "theta",
+        "missing_strategy": "replace_missing_with_mean"
+      },
+      {
+        "attribute": "vega",
+        "missing_strategy": "replace_missing_with_mean"
+      },
+      {
+        "attribute": "rho",
+        "missing_strategy": "replace_missing_with_mean"
+      }
+    ],
+    "plotting": [
+      {
+        "action": "make_density_plot",
+        "attribute": "strike",
+        "name": "StrikeDensity"
+      },
+      {
+        "action": "make_density_plot",
+        "attribute": "vol",
+        "name": "VolDensity"
+      }
+    ]
+  }
+  
