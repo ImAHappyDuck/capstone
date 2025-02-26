@@ -4,7 +4,7 @@
     "plot_directory_path": "plots",
     "attributes": {
       "date": {
-        "type": "nominal"
+        "type": "datetime"
       },
       "act_symbol": {
         "type": "nominal"
