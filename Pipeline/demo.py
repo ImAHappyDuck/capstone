@@ -132,6 +132,7 @@ def load_config(path: str) -> Any:
 
 def get_datatype(name: str) -> DTypeLike:
     match name:
+        case 'datetime':return pd.Timestamp
         case 'real': return np.float32
         case 'nominal': return np.unicode_
         case _: raise ValueError(f"Unrecognized attribute type {name}")

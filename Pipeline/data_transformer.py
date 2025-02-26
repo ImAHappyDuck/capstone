@@ -36,6 +36,7 @@ def transform_feature(df: pd.DataFrame, col_name: str, action: str, args: list[A
     elif action == 'make_median_bins': func = make_median_bins
     elif action == 'make_min_bins': func = make_min_bins
     elif action == 'make_max_bins': func = make_max_bins
+    elif action == 'split_date': func = split_date
     else: raise ValueError(f"Unrecognized transformation action: {action}")
     # apply this function to the specified column
     df[col_name] = func(df[col_name], *args, **kwargs) # type: ignore
@@ -48,6 +49,19 @@ def z_score_norm(items: Sequence[int|float]) -> Sequence[float]:
     for item in items:
         z_scores.append((item - mean_value)/stdev_value)
     return z_scores
+
+def split_date(items: Sequence[str|pd.Timestamp], date_format: str = '%Y-%m-%d') -> tuple[Sequence[int], Sequence[int], Sequence[int]]:
+    """Splits a sequence of dates into three separate sequences of year, month, and day"""
+    years = []
+    months = []
+    days = []
+    for item in items:
+        if isinstance(item, str):
+            item = pd.to_datetime(item, format=date_format)
+        years.append(item.year)
+        months.append(item.month)
+        days.append(item.day)
+    return years, months, days
 
 def min_max_norm(items: Sequence[int|float]) -> Sequence[float]:
     """Scales all items into the range [0, 1]"""
