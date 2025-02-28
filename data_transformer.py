@@ -8,10 +8,6 @@ import sys
 import numpy as np
 scriptdir = os.path.abspath(os.path.dirname(__file__))
 if scriptdir not in sys.path: sys.path.append(scriptdir)
-<<<<<<< HEAD
-=======
-# removed capstone module
->>>>>>> ebb2a21ba83624b1c1d2924d919e7f43d49f0c8f
 from data_inspector import count_categories
 
 def transform_feature(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwargs: dict[str,Any]):
@@ -68,6 +64,7 @@ def split_date(items: Sequence[str|pd.Timestamp], date_format: str = '%Y-%m-%d')
         days.append(item.day)
     print(f"Years: {years}, Months: {months}, Days: {days}")  # Debug print
     return years, months, days
+
 
 def min_max_norm(items: Sequence[int|float]) -> Sequence[float]:
     """Scales all items into the range [0, 1]"""

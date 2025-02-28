@@ -4,7 +4,7 @@
     "plot_directory_path": "plots",
     "attributes": {
       "date": {
-        "type": "datetime"
+        "type": "nominal"
       },
       "act_symbol": {
         "type": "nominal"
@@ -105,6 +105,10 @@
       {
         "action": "make_mean_bins",
         "attribute": "vol"
+      },
+      {
+        "action": "split_date",
+        "attribute": "date"
       }
     ],
     "plotting": [

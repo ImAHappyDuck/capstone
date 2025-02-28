@@ -55,6 +55,10 @@ def main(args: Namespace):
         # save this image in the plots directory with the requested file name
         img.save(os.path.join(config.plot_directory_path, f"{plot_step.name}.png"))
 
+
+
+
+
 class Config(NamedTuple):
     raw_dataset_path: str
     clean_dataset_path: str
@@ -133,10 +137,12 @@ def load_config(path: str) -> Any:
 
 def get_datatype(name: str) -> DTypeLike:
     match name:
-        case 'datetime':return pd.Timestamp
+        # case 'datetime':return pd.Timestamp
         case 'real': return np.float32
         case 'nominal': return np.unicode_
         case _: raise ValueError(f"Unrecognized attribute type {name}")
+
+
 
 if __name__=='__main__':
     parser = ArgumentParser(description=(
