@@ -8,7 +8,7 @@ import sys
 import numpy as np
 scriptdir = os.path.abspath(os.path.dirname(__file__))
 if scriptdir not in sys.path: sys.path.append(scriptdir)
-from capstone.data_inspector import count_categories
+from data_inspector import count_categories
 
 def transform_feature(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwargs: dict[str,Any]):
     """Transforms a single column of the dataframe using the specified modification
@@ -56,11 +56,13 @@ def split_date(items: Sequence[str|pd.Timestamp], date_format: str = '%Y-%m-%d')
     months = []
     days = []
     for item in items:
+        print(f"Processing item: {item}")  # Debug print
         if isinstance(item, str):
             item = pd.to_datetime(item, format=date_format)
         years.append(item.year)
         months.append(item.month)
         days.append(item.day)
+    print(f"Years: {years}, Months: {months}, Days: {days}")  # Debug print
     return years, months, days
 
 def min_max_norm(items: Sequence[int|float]) -> Sequence[float]:
