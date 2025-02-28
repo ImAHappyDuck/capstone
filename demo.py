@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import pandas as pd
+from PIL import Image
+from matplotlib.figure import Figure
 import numpy as np
 from numpy.typing import DTypeLike
 
@@ -54,7 +56,9 @@ def main(args: Namespace):
         # create the requested plot image
         img = make_plot(df, plot_step.attribute, plot_step.action, plot_step.args, plot_step.kwargs)
         # save this image in the plots directory with the requested file name
-        img.save(os.path.join(config.plot_directory_path, f"{plot_step.name}.png"))
+        save_plot(img, config.plot_directory_path, plot_step.name)
+
+        # img.savefig(os.path.join(config.plot_directory_path, f"{plot_step.name}.png"))
 
 
 
@@ -135,6 +139,18 @@ class PlotConfig(NamedTuple):
 def load_config(path: str) -> Any:
     with open(path, 'rt', encoding='utf-8') as fin:
         return Config.parse(json.load(fin))
+    
+def save_plot(img: Any, plot_directory_path: str, plot_name: str):
+    """Saves the given plot to the specified directory with the given name"""
+    # Ensure the directory exists
+    os.makedirs(plot_directory_path, exist_ok=True)
+    # Save the plot
+    if isinstance(img, Figure):
+        img.savefig(os.path.join(plot_directory_path, f"{plot_name}.png"))
+    elif isinstance(img, Image.Image):
+        img.save(os.path.join(plot_directory_path, f"{plot_name}.png"))
+    else:
+        raise ValueError("Unsupported image type")
 
 def get_datatype(name: str) -> DTypeLike:
     match name:

@@ -11,23 +11,6 @@ if scriptdir not in sys.path: sys.path.append(scriptdir)
 from data_inspector import count_categories
 
 def transform_feature(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwargs: dict[str,Any]):
-    """Transforms a single column of the dataframe using the specified modification
-
-    Positional Arguments:
-    df       - The dataframe on which an attribute will be transformed (may be modified in place)
-    col_name - The name of the column whos values will be changed
-    action   - One of the following function names (defined in this file)
-                  1. z_score_norm
-                  2. min_max_norm
-                  3. make_named_bins
-                  4. make_mean_bins
-                  5. make_median_bins
-                  6. make_min_bins
-                  7. make_max_bins
-    args     - A list of the positional arguments required by the action function
-    kwargs   - A dictionary of the keyword arguments required by the action function
-    """
-    # identify the correct function to call given the specified action
     if action == 'z_score_norm': func = z_score_norm
     elif action == 'min_max_norm': func = min_max_norm
     elif action == 'merge_uncommon': func = merge_uncommon
@@ -36,10 +19,47 @@ def transform_feature(df: pd.DataFrame, col_name: str, action: str, args: list[A
     elif action == 'make_median_bins': func = make_median_bins
     elif action == 'make_min_bins': func = make_min_bins
     elif action == 'make_max_bins': func = make_max_bins
-    elif action == 'split_date': func = split_date
+    elif action == 'split_date': 
+        years, months, days = split_date(df[col_name], *args, **kwargs)
+        df[col_name + '_year'] = years
+        df[col_name + '_month'] = months
+        df[col_name + '_day'] = days
+        return
     else: raise ValueError(f"Unrecognized transformation action: {action}")
-    # apply this function to the specified column
-    df[col_name] = func(df[col_name], *args, **kwargs) # type: ignore
+    df[col_name] = func(df[col_name], *args, **kwargs)  # type: ignore
+
+
+
+# def transform_feature(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwargs: dict[str,Any]):
+#     """Transforms a single column of the dataframe using the specified modification
+
+#     Positional Arguments:
+#     df       - The dataframe on which an attribute will be transformed (may be modified in place)
+#     col_name - The name of the column whos values will be changed
+#     action   - One of the following function names (defined in this file)
+#                   1. z_score_norm
+#                   2. min_max_norm
+#                   3. make_named_bins
+#                   4. make_mean_bins
+#                   5. make_median_bins
+#                   6. make_min_bins
+#                   7. make_max_bins
+#     args     - A list of the positional arguments required by the action function
+#     kwargs   - A dictionary of the keyword arguments required by the action function
+#     """
+#     # identify the correct function to call given the specified action
+#     if action == 'z_score_norm': func = z_score_norm
+#     elif action == 'min_max_norm': func = min_max_norm
+#     elif action == 'merge_uncommon': func = merge_uncommon
+#     elif action == 'make_named_bins': func = make_named_bins
+#     elif action == 'make_mean_bins': func = make_mean_bins
+#     elif action == 'make_median_bins': func = make_median_bins
+#     elif action == 'make_min_bins': func = make_min_bins
+#     elif action == 'make_max_bins': func = make_max_bins
+#     elif action == 'split_date': func = split_date
+#     else: raise ValueError(f"Unrecognized transformation action: {action}")
+#     # apply this function to the specified column
+#     df[col_name] = func(df[col_name], *args, **kwargs) # type: ignore
 
 def z_score_norm(items: Sequence[int|float]) -> Sequence[float]:
     """Translates all values into standard deviations above and below the mean"""
@@ -56,13 +76,13 @@ def split_date(items: Sequence[str|pd.Timestamp], date_format: str = '%Y-%m-%d')
     months = []
     days = []
     for item in items:
-        print(f"Processing item: {item}")  # Debug print
+        # print(f"Processing item: {item}")  # Debug print
         if isinstance(item, str):
             item = pd.to_datetime(item, format=date_format)
         years.append(item.year)
         months.append(item.month)
         days.append(item.day)
-    print(f"Years: {years}, Months: {months}, Days: {days}")  # Debug print
+    # return pd.DataFrame(years, months, days)
     return years, months, days
 
 
