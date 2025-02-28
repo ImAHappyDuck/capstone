@@ -97,6 +97,16 @@
         "missing_strategy": "replace_missing_with_mean"
       }
     ],
+    "transforming": [
+      {
+        "action": "make_mean_bins",
+        "attribute": "strike"
+      },
+      {
+        "action": "make_mean_bins",
+        "attribute": "vol"
+      }
+    ],
     "plotting": [
       {
         "action": "make_density_plot",

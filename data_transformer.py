@@ -8,7 +8,8 @@ import sys
 import numpy as np
 scriptdir = os.path.abspath(os.path.dirname(__file__))
 if scriptdir not in sys.path: sys.path.append(scriptdir)
-from capstone.data_inspector import count_categories
+# removed capstone module
+from data_inspector import count_categories
 
 def transform_feature(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwargs: dict[str,Any]):
     """Transforms a single column of the dataframe using the specified modification
