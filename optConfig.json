@@ -98,19 +98,7 @@
       }
   ],
   "transforming": [
-      {
-          "action": "make_mean_bins",
-          "attribute": "strike",
-          "args": ["freq", 5],
-          "kwargs": {}
-      },
-      {
-          "action": "make_mean_bins",
-          "attribute": "vol",
-          "args": ["freq", 5],
-          "kwargs": {}
-      },
-      {
+         {
           "action": "split_date",
           "attribute": "date",
           "args": [],
