@@ -8,6 +8,10 @@ import sys
 import numpy as np
 scriptdir = os.path.abspath(os.path.dirname(__file__))
 if scriptdir not in sys.path: sys.path.append(scriptdir)
+<<<<<<< HEAD
+=======
+# removed capstone module
+>>>>>>> ebb2a21ba83624b1c1d2924d919e7f43d49f0c8f
 from data_inspector import count_categories
 
 def transform_feature(df: pd.DataFrame, col_name: str, action: str, args: list[Any], kwargs: dict[str,Any]):

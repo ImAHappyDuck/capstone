@@ -15,11 +15,12 @@ import sys
 scriptdir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(scriptdir)
 
+# removed capstone.
 # load all the necessary functions for this package
-from capstone.data_loader import load_data, save_data
-from capstone.data_cleaner import remove_missing, fix_missing
-from capstone.data_transformer import transform_feature
-from capstone.data_inspector import make_plot
+from data_loader import load_data, save_data
+from data_cleaner import remove_missing, fix_missing
+from data_transformer import transform_feature
+from data_inspector import make_plot
 
 def main(args: Namespace):
     # load the configuration from the JSON config file
