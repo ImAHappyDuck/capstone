@@ -19,6 +19,7 @@ def fix_missing(df: pd.DataFrame, col_name: str, strategy: str) -> pd.DataFrame:
     if strategy == 'replace_missing_with_mode': f = replace_missing_with_mode
     elif strategy == 'replace_missing_with_mean': f = replace_missing_with_mean
     elif strategy == 'replace_missing_with_median': f = replace_missing_with_median
+    # elif strategy == 'remove_missing': f = remove_missing
     else: raise ValueError(f"Unrecognized missing replacement strategy: {strategy}")
     # call that function and return the resulting DataFrame
     df[col_name] = f(df, col_name)

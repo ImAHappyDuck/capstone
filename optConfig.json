@@ -1,127 +1,134 @@
 {
-    "raw_dataset_path": "optData.csv",
-    "clean_dataset_path": "cleaned_optData.csv",
-    "plot_directory_path": "plots",
-    "attributes": {
+  "raw_dataset_path": "optDataShort.csv",
+  "clean_dataset_path": "cleaned_optData.csv",
+  "plot_directory_path": "plots",
+  "attributes": {
       "date": {
-        "type": "nominal"
+          "type": "nominal"
       },
       "act_symbol": {
-        "type": "nominal"
+          "type": "nominal"
       },
       "expiration": {
-        "type": "nominal"
+          "type": "nominal"
       },
       "strike": {
-        "type": "real"
+          "type": "real"
       },
       "call_put": {
-        "type": "nominal"
+          "type": "nominal"
       },
       "bid": {
-        "type": "real"
+          "type": "real"
       },
       "ask": {
-        "type": "real"
+          "type": "real"
       },
       "vol": {
-        "type": "real"
+          "type": "real"
       },
       "delta": {
-        "type": "real"
+          "type": "real"
       },
       "gamma": {
-        "type": "real"
+          "type": "real"
       },
       "theta": {
-        "type": "real"
+          "type": "real"
       },
       "vega": {
-        "type": "real"
+          "type": "real"
       },
       "rho": {
-        "type": "real"
+          "type": "real"
       }
-    },
-    "cleaning": [
+  },
+  "cleaning": [
       {
-        "attribute": "date",
-        "missing_strategy": "remove_missing"
+          "attribute": "date",
+          "missing_strategy": "remove"
       },
       {
-        "attribute": "act_symbol",
-        "missing_strategy": "remove_missing"
+          "attribute": "act_symbol",
+          "missing_strategy": "remove"
       },
       {
-        "attribute": "expiration",
-        "missing_strategy": "remove_missing"
+          "attribute": "expiration",
+          "missing_strategy": "remove"
       },
       {
-        "attribute": "strike",
-        "missing_strategy": "remove_missing"
+          "attribute": "strike",
+          "missing_strategy": "remove"
       },
       {
-        "attribute": "call_put",
-        "missing_strategy": "remove_missing"
+          "attribute": "call_put",
+          "missing_strategy": "remove"
       },
       {
-        "attribute": "bid",
-        "missing_strategy": "remove_missing"
+          "attribute": "bid",
+          "missing_strategy": "remove"
       },
       {
-        "attribute": "ask",
-        "missing_strategy": "remove_missing"
+          "attribute": "ask",
+          "missing_strategy": "remove"
       },
       {
-        "attribute": "vol",
-        "missing_strategy": "remove_missing"
+          "attribute": "vol",
+          "missing_strategy": "remove"
       },
       {
-        "attribute": "delta",
-        "missing_strategy": "replace_missing_with_mean"
+          "attribute": "delta",
+          "missing_strategy": "replace_missing_with_mean"
       },
       {
-        "attribute": "gamma",
-        "missing_strategy": "replace_missing_with_mean"
+          "attribute": "gamma",
+          "missing_strategy": "replace_missing_with_mean"
       },
       {
-        "attribute": "theta",
-        "missing_strategy": "replace_missing_with_mean"
+          "attribute": "theta",
+          "missing_strategy": "replace_missing_with_mean"
       },
       {
-        "attribute": "vega",
-        "missing_strategy": "replace_missing_with_mean"
+          "attribute": "vega",
+          "missing_strategy": "replace_missing_with_mean"
       },
       {
-        "attribute": "rho",
-        "missing_strategy": "replace_missing_with_mean"
+          "attribute": "rho",
+          "missing_strategy": "replace_missing_with_mean"
       }
-    ],
-    "transforming": [
+  ],
+  "transforming": [
       {
-        "action": "make_mean_bins",
-        "attribute": "strike"
+          "action": "make_mean_bins",
+          "attribute": "strike",
+          "args": ["freq", 5],
+          "kwargs": {}
       },
       {
-        "action": "make_mean_bins",
-        "attribute": "vol"
+          "action": "make_mean_bins",
+          "attribute": "vol",
+          "args": ["freq", 5],
+          "kwargs": {}
       },
       {
-        "action": "split_date",
-        "attribute": "date"
+          "action": "split_date",
+          "attribute": "date",
+          "args": [],
+          "kwargs": {
+              "date_format": "%Y-%m-%d"
+          }
       }
-    ],
-    "plotting": [
+  ],
+  "plotting": [
       {
-        "action": "make_density_plot",
-        "attribute": "strike",
-        "name": "StrikeDensity"
+          "action": "make_density_plot",
+          "attribute": "strike",
+          "name": "StrikeDensity"
       },
       {
-        "action": "make_density_plot",
-        "attribute": "vol",
-        "name": "VolDensity"
+          "action": "make_density_plot",
+          "attribute": "vol",
+          "name": "VolDensity"
       }
-    ]
-  }
-  
+  ]
+}

@@ -23,6 +23,7 @@ from data_transformer import transform_feature
 from data_inspector import make_plot
 
 def main(args: Namespace):
+    print("in Main")
     # load the configuration from the JSON config file
     config: Config = load_config(args.config)
     # load the columns specified into a DataFrame
