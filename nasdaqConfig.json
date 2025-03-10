@@ -1,0 +1,78 @@
+{
+    "raw_dataset_path": "nasdaq_exteral_data_short.csv",
+    "clean_dataset_path": "cleaned_nasdaq_exteral_data_short.csv",
+    "plot_directory_path": "plots",
+    "attributes": {
+        "Date": {
+            "type": "nominal"
+        },
+        "Article_title": {
+            "type": "nominal"
+        },
+        "Stock_symbol": {
+            "type": "nominal"
+        },
+        "Url": {
+            "type": "nominal"
+        },
+        "Publisher": {
+            "type": "nominal"
+        },
+        "Author": {
+            "type": "nominal"
+        },
+        "Article": {
+            "type": "nominal"
+        },
+        "Lsa_summary": {
+            "type": "nominal"
+        },
+        "Luhn_summary": {
+            "type": "nominal"
+        },
+        "Textrank_summary": {
+            "type": "nominal"
+        },
+        "Lexrank_summary": {
+            "type": "nominal"
+        }
+    },
+    "cleaning": [{
+        "attribute": "Date",
+        "missing_strategy": "remove"
+    },
+    {
+        "attribute": "Article_title",
+        "missing_strategy": "remove"
+    },
+    {
+        "attribute": "Stock_symbol",
+        "missing_strategy": "remove"
+    },
+    {
+        "attribute": "Url",
+        "missing_strategy": "remove"
+    },
+    {
+        "attribute": "Article",
+        "missing_strategy": "remove"
+    },
+    {
+        "attribute": "Lsa_summary",
+        "missing_strategy": "remove"
+    },
+    {
+        "attribute": "Luhn_summary",
+        "missing_strategy": "remove"
+    },
+    {
+        "attribute": "Textrank_summary",
+        "missing_strategy": "remove"
+    },
+    {
+        "attribute": "Lexrank_summary",
+        "missing_strategy": "remove"
+    }],
+    "transforming":[],
+    "plotting": []
+  }
