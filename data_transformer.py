@@ -1,7 +1,7 @@
 import pandas as pd
 
 from statistics import mean, median, stdev
-from typing import Sequence, Callable, Any
+from typing import Sequence, Callable, Any, List, Optional
 
 import os
 import sys
@@ -25,6 +25,11 @@ def transform_feature(df: pd.DataFrame, col_name: str, action: str, args: list[A
         df[col_name + '_month'] = months
         df[col_name + '_day'] = days
         return
+    
+    elif action == 'filter_by_year_and_month':
+        df = filter_by_year_and_month(df, 'date_year', 'date_month', *args, **kwargs)
+        return df
+    
     else: raise ValueError(f"Unrecognized transformation action: {action}")
     df[col_name] = func(df[col_name], *args, **kwargs)  # type: ignore
 
@@ -84,6 +89,17 @@ def split_date(items: Sequence[str|pd.Timestamp], date_format: str = '%Y-%m-%d')
         days.append(item.day)
     # return pd.DataFrame(years, months, days)
     return years, months, days
+
+def filter_by_year_and_month(df: pd.DataFrame, col_year: str, col_month: str, years: List[int], months: Optional[List[int]] = None, *args: list[Any], **kwargs: dict[str, Any]) -> pd.DataFrame:
+   if col_year != 'date_year' or col_month != 'date_month':
+        raise ValueError("The column names must be 'date_year' and 'date_month' for filtering by year and month.")
+    
+   if months is None:
+        filtered_df = df[df['date_year'].isin(years)]
+   else:
+        filtered_df = df[df['date_year'].isin(years) & df['date_month'].isin(months)]
+    
+   return filtered_df
 
 
 def min_max_norm(items: Sequence[int|float]) -> Sequence[float]:

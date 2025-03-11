@@ -1,5 +1,5 @@
 {
-  "raw_dataset_path": "optDataShort.csv",
+  "raw_dataset_path": "optData.csv",
   "clean_dataset_path": "cleaned_optData.csv",
   "plot_directory_path": "plots",
   "attributes": {
@@ -105,7 +105,13 @@
           "kwargs": {
               "date_format": "%Y-%m-%d"
           }
-      }
+      },
+      {
+        "attribute": "date_year",
+        "action": "filter_by_year_and_month",
+        "args": [[2020], [1, 2, 3, 4, 5, 6]],  
+        "kwargs": {}
+    }
   ],
   "plotting": [
       {

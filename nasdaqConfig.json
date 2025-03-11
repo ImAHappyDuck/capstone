@@ -1,6 +1,6 @@
 {
-    "raw_dataset_path": "nasdaq_exteral_data_short.csv",
-    "clean_dataset_path": "cleaned_nasdaq_exteral_data_short.csv",
+    "raw_dataset_path": "nasdaq_external_data.csv",
+    "clean_dataset_path": "cleanedFinNews.csv",
     "plot_directory_path": "plots",
     "attributes": {
         "Date": {
@@ -73,6 +73,19 @@
         "attribute": "Lexrank_summary",
         "missing_strategy": "remove"
     }],
-    "transforming":[],
+    "transforming":[
+        {
+            "attribute": "Date",
+            "action": "split_date",
+            "args": [],
+            "kwargs": {}
+        },
+        {
+            "attribute": "date_year",
+            "action": "filter_by_year_and_month",
+            "args": [[2020], [1, 2, 3, 4, 5, 6]], 
+            "kwargs": {}
+        }
+    ],
     "plotting": []
   }
