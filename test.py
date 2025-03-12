@@ -42,7 +42,7 @@ def main(args: Namespace):
     
     # Filter the CSV file by year before loading it into memory
     years_to_filter = [2020]  # Example years to filter by
-    df = filter_csv_by_year(config.raw_dataset_path, 'date', years_to_filter)
+    df = filter_csv_by_year(config.raw_dataset_path, 'Date', years_to_filter)
     
     # Define data types and missing values
     dtypes: dict[str, DTypeLike] = {attr_name: get_datatype(attr_config.type) 
