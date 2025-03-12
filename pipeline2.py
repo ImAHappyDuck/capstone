@@ -33,78 +33,114 @@ df['neg_score'] = df.apply(lambda row: sum(neg_score(row[col]) for col in column
 df['neu_score'] = df.apply(lambda row: sum(neu_score(row[col]) for col in columns_to_iterate)/5, axis=1)
 
 
-print(df[['pos_score', 'neg_score', 'neu_score']])
+# print(df[['pos_score', 'neg_score', 'neu_score']])
 
 df.to_csv('cleanedFinNews.csv', index=False)
 
-# # add stock prices and option profitablilty to optData
-# df2 = pd.read_csv('cleaned_optData.csv')
-# import pandas as pd
-# import zipfile
 
-# # Assume df2 is your original DataFrame
-# df2['expiration'] = pd.to_datetime(df2['expiration'])
 
-# # Path to the ZIP archive containing the full_history folder
-# zip_file_path = 'full_history.zip'
 
-# # Dictionary to store loaded stock price data for tickers
-# price_cache = {}
+import pandas as pd
+import zipfile
+from datetime import timedelta
 
-# # List to hold the fetched stock price data
-# price_data = []
+df2 = pd.read_csv('cleaned_optData.csv')
+df2['expiration'] = pd.to_datetime(df2['expiration'])
+zip_file_path = 'full_history.zip'
+price_cache = {}
 
-# # Open the ZIP file
-# with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
-#     # List of all files inside the 'full_history' folder in the zip
-#     zip_file_list = zip_file.namelist()
+# Create a new DataFrame to collect all ticker/expiration pairs
+all_pairs = df2[['act_symbol', 'expiration']].drop_duplicates().reset_index(drop=True)
+all_pairs['close_price'] = None  # Initialize with None
 
-#     # Iterate over each unique ticker and expiration date in df2
-#     for ticker, expiration in df2[['act_symbol', 'expiration']].drop_duplicates().values:
-#         # Check if the ticker's stock data has already been loaded
-#         if ticker not in price_cache:
-#             # Construct the name of the ticker's CSV file inside the full_history folder
-#             ticker_file = f"full_history/{ticker}.csv"
-            
-#             # Check if the CSV file exists in the ZIP archive
-#             if ticker_file in zip_file_list:
-#                 try:
-#                     # Load the CSV file for the ticker directly from the ZIP archive
-#                     with zip_file.open(ticker_file) as file:
-#                         stock_data = pd.read_csv(file, parse_dates=['date'])
-                    
-#                     # Cache the stock data
-#                     price_cache[ticker] = stock_data
-#                 except Exception as e:
-#                     print(f"Error reading {ticker_file}: {e}")
-#                     price_cache[ticker] = None
-#             else:
-#                 print(f"File {ticker_file} not found in the ZIP archive.")
-#                 price_cache[ticker] = None
+# Open the ZIP file
+with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
+    # Get list of all files in the ZIP
+    zip_file_list = zip_file.namelist()
+    zip_tickers = [f.split('/')[-1].split('.')[0] for f in zip_file_list if f.startswith('full_history/') and f.endswith('.csv')]
+    
+    # Log how many tickers are available
+    print(f"Found {len(zip_tickers)} ticker files in ZIP archive")
+    
+    # Process each ticker only once
+    for ticker in all_pairs['act_symbol'].unique():
+        # Construct the name of the ticker's CSV file inside the full_history folder
+        ticker_file = f"full_history/{ticker}.csv"
         
-#         # If stock_data is None, skip processing this ticker
-#         stock_data = price_cache.get(ticker)
-#         if stock_data is not None:
-#             # Filter the stock data for the given expiration date
-#             expiration_data = stock_data[stock_data['date'] == expiration]
+        # Check if the CSV file exists in the ZIP archive
+        if ticker_file in zip_file_list:
+            try:
+                # Load the CSV file for the ticker directly from the ZIP archive
+                with zip_file.open(ticker_file) as file:
+                    stock_data = pd.read_csv(file)
+                    # Ensure date column is in datetime format
+                    stock_data['date'] = pd.to_datetime(stock_data['date'])
+                    
+                # Cache the stock data
+                price_cache[ticker] = stock_data
+                print(f"Loaded price data for {ticker}: {len(stock_data)} records")
+            except Exception as e:
+                print(f"Error reading {ticker_file}: {e}")
+        else:
+            print(f"File for ticker {ticker} not found in the ZIP archive")
+    
+    # Now process each ticker/expiration pair
+    for index, row in all_pairs.iterrows():
+        ticker = row['act_symbol']
+        expiration_date = row['expiration']
+        
+        # Skip if we don't have data for this ticker
+        if ticker not in price_cache:
+            continue
             
-#             if not expiration_data.empty:
-#                 close_price = expiration_data['close'].iloc[0]
-                
-#                 # Append the price data for each row in the corresponding group
-#                 for _ in range(len(df2[(df2['act_symbol'] == ticker) & (df2['expiration'] == expiration)])):
-#                     price_data.append({'act_symbol': ticker, 'expiration': expiration, 'close_price': close_price})
-#         else:
-#             print(f"No stock data available for ticker {ticker}, skipping.")
+        stock_data = price_cache[ticker]
+        
+        # Try to find an exact match for the expiration date
+        expiration_data = stock_data[stock_data['date'] == expiration_date]
+        
+        # If no exact match, try one day before (some options expire on weekends)
+        if expiration_data.empty:
+            # Try looking for the trading day before expiration
+            for days_back in range(1, 5):  # Check up to 4 days back (handles weekends and holidays)
+                check_date = expiration_date - timedelta(days=days_back)
+                expiration_data = stock_data[stock_data['date'] == check_date]
+                if not expiration_data.empty:
+                    print(f"Found price for {ticker} using date {check_date} instead of {expiration_date}")
+                    break
+        
+        # If we found data, update the close price
+        if not expiration_data.empty:
+            close_price = expiration_data['close'].iloc[0]
+            all_pairs.loc[index, 'close_price'] = close_price
+        else:
+            print(f"No price data found for {ticker} on or near {expiration_date}")
 
-# # Convert the price data list to a DataFrame
-# price_data_df = pd.DataFrame(price_data)
+# Check how many price points we found
+print(f"Found prices for {all_pairs['close_price'].notna().sum()} out of {len(all_pairs)} ticker/expiration pairs")
 
-# # Merge price data with the original DataFrame (df2)
-# df2 = df2.merge(price_data_df, on=['act_symbol', 'expiration'], how='left')
+# Merge the price data back to the original dataframe
+result = pd.merge(df2, all_pairs, on=['act_symbol', 'expiration'], how='left')
 
-# # Calculate moneyness (In the money or out of the money)
-# df2['moneyness'] = df2['close_price'] - df2['strike']
+# Calculate moneyness and other option profitability metrics
+result['moneyness'] = None  # Initialize column
 
-# print(df2.head())
-# df2.to_csv('cleaned_optData.csv', index=False)
+# Apply for calls
+call_mask = result['call_put'] == 'Call'
+result.loc[call_mask, 'moneyness'] = result.loc[call_mask, 'close_price'] - result.loc[call_mask, 'strike']
+
+# Apply for puts (reversed calculation)
+put_mask = result['call_put'] == 'Put'
+result.loc[put_mask, 'moneyness'] = result.loc[put_mask, 'strike'] - result.loc[put_mask, 'close_price']
+
+# Classify as ITM/OTM/ATM
+result['position'] = 'Unknown'
+result.loc[result['moneyness'] > 0, 'position'] = 'ITM'  # In the money
+result.loc[result['moneyness'] < 0, 'position'] = 'OTM'  # Out of the money
+result.loc[result['moneyness'].abs() < 0.01, 'position'] = 'ATM'  # At the money (within $0.01)
+
+# Print summary
+print(result[['act_symbol', 'expiration', 'strike', 'call_put', 'close_price', 'moneyness', 'position']].head(10))
+
+# Save to CSV
+result.to_csv('cleaned_optData.csv', index=False)
+print(f"Saved data with {result['close_price'].notna().sum()} price points to cleaned_optData_with_prices.csv")
