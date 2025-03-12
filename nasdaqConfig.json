@@ -14,16 +14,7 @@
         },
         "Url": {
             "type": "nominal"
-        },
-        "Publisher": {
-            "type": "nominal"
-        },
-        "Author": {
-            "type": "nominal"
-        },
-        "Article": {
-            "type": "nominal"
-        },
+        },        
         "Lsa_summary": {
             "type": "nominal"
         },
@@ -53,10 +44,7 @@
         "attribute": "Url",
         "missing_strategy": "remove"
     },
-    {
-        "attribute": "Article",
-        "missing_strategy": "remove"
-    },
+  
     {
         "attribute": "Lsa_summary",
         "missing_strategy": "remove"
@@ -74,18 +62,7 @@
         "missing_strategy": "remove"
     }],
     "transforming":[
-        {
-            "attribute": "Date",
-            "action": "split_date",
-            "args": [],
-            "kwargs": {}
-        },
-        {
-            "attribute": "date_year",
-            "action": "filter_by_year_and_month",
-            "args": [[2020], [1, 2, 3, 4, 5, 6]], 
-            "kwargs": {}
-        }
+
     ],
     "plotting": []
   }
