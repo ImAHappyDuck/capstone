@@ -1,44 +1,68 @@
 import pandas as pd
-import plotly.express as px 
-from scipy.stats import pearsonr, chi2_contingency
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-from datetime import datetime, date
+import time
 
-#Add sentiment columns to the news dataset
+# Start timing
+start_time = time.time()
+
+# Load the data
+print("Loading dataset...")
 df = pd.read_csv('cleanedFinNews.csv', dtype=str).fillna('')
 
-def pos_score(sentence: str):
-    sentence_analyzer = SentimentIntensityAnalyzer()
-    temp_sentence = sentence
-    sentiment_result = sentence_analyzer.polarity_scores(temp_sentence)
-    return (sentiment_result['pos'])
+# Create a single analyzer instance to reuse
+analyzer = SentimentIntensityAnalyzer()
 
-# returns the negative sentiment intensity for a sentence
-def neg_score(sentence: str):
-    sentence_analyzer = SentimentIntensityAnalyzer()
-    temp_sentence = sentence
-    sentiment_result = sentence_analyzer.polarity_scores(temp_sentence)
-    return (sentiment_result['neg'])
-
-# returns the neutral sentiment intensity for a sentence
-def neu_score(sentence: str):
-    sentence_analyzer = SentimentIntensityAnalyzer()
-    temp_sentence = sentence
-    sentiment_result = sentence_analyzer.polarity_scores(temp_sentence)
-    return (sentiment_result['neu'])
-
+# Define columns to analyze
 columns_to_iterate = [df.columns[2]] + list(df.columns[6:])
-df['pos_score'] = df.apply(lambda row: sum(pos_score(row[col]) for col in columns_to_iterate)/5, axis=1)
-df['neg_score'] = df.apply(lambda row: sum(neg_score(row[col]) for col in columns_to_iterate)/5, axis=1)
-df['neu_score'] = df.apply(lambda row: sum(neu_score(row[col]) for col in columns_to_iterate)/5, axis=1)
+print(f"Analyzing sentiment for columns: {columns_to_iterate}")
 
+# Define more efficient functions that use the shared analyzer
+def calculate_sentiment_scores(text):
+    return analyzer.polarity_scores(text)
 
-# print(df[['pos_score', 'neg_score', 'neu_score']])
+# Pre-calculate all sentiment scores at once
+print(f"Processing {len(df)} rows...")
 
+# Initialize result columns
+df['pos_score'] = 0.0
+df['neg_score'] = 0.0
+df['neu_score'] = 0.0
+
+# Process in batches for better performance feedback
+batch_size = 1000
+total_rows = len(df)
+
+for start_idx in range(0, total_rows, batch_size):
+    end_idx = min(start_idx + batch_size, total_rows)
+    print(f"Processing rows {start_idx} to {end_idx} of {total_rows}...")
+    
+    # Process each row in the current batch
+    for idx in range(start_idx, end_idx):
+        pos_sum = 0
+        neg_sum = 0
+        neu_sum = 0
+        
+        # Process each text column for this row
+        for col in columns_to_iterate:
+            # Get sentiment scores once for this text
+            sentiment = calculate_sentiment_scores(df.iloc[idx][col])
+            pos_sum += sentiment['pos']
+            neg_sum += sentiment['neg']
+            neu_sum += sentiment['neu']
+        
+        # Store average scores
+        df.loc[idx, 'pos_score'] = pos_sum / len(columns_to_iterate)
+        df.loc[idx, 'neg_score'] = neg_sum / len(columns_to_iterate)
+        df.loc[idx, 'neu_score'] = neu_sum / len(columns_to_iterate)
+
+# Save results
+print("Saving results...")
 df.to_csv('cleanedFinNews.csv', index=False)
 
-
-
+# Calculate and display execution time
+end_time = time.time()
+execution_time = end_time - start_time
+print(f"Completed in {execution_time:.2f} seconds")
 
 import pandas as pd
 import zipfile
