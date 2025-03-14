@@ -100,3 +100,5 @@ print(f"Random Baseline Moneyness: {average}")
 y_pred = model.predict(X_test)
 average_projected_moneyness = np.mean(y_pred)
 print(f"Projected Moneyness: {average_projected_moneyness:.4f}")
+joblib.dump(model, 'linear_regression_model.pkl')
+
