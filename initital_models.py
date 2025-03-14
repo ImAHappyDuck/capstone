@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, confusion_matrix, classification_report
-
+import joblib
 
 df = pd.read_csv('cleaned_optData.csv')
 data = df[df['moneyness'].isna() == False]
@@ -36,3 +36,4 @@ print("\nConfusion Matrix:")
 print(conf_matrix)
 print("\nClassification Report:")
 print(class_report)
+joblib.dump(model, 'logistic_regression_model.pkl')
