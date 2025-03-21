@@ -50,7 +50,7 @@ if args.model == "logistic":
     #Model 2, linear regression predicting moneyness, with options data and sentiment data. 
 elif args.model == "linear":
 
-    df = pd.read_csv('cleaned_optData.csv')
+    df = pd.read_csv('cleaned_optData_with_prices.csv')
 
     df2 = pd.read_csv('cleanedFinNews.csv')
     df = df[df['moneyness'].notna() & (df['moneyness'] != 0)]

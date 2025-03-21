@@ -24,9 +24,9 @@
 # print(f"Processing {len(df)} rows...")
 
 # # Initialize result columns
-# df['pos_score'] = 0.0
-# df['neg_score'] = 0.0
-# df['neu_score'] = 0.0
+# df['pos_score']= 0.0
+# df['neg_score']= 0.0
+# df['neu_score']= 0.0
 
 # # Process in batches for better performance feedback
 # batch_size = 1000
@@ -51,9 +51,9 @@
 #             neu_sum += sentiment['neu']
         
 #         # Store average scores
-#         df.loc[idx, 'pos_score'] = pos_sum / len(columns_to_iterate)
-#         df.loc[idx, 'neg_score'] = neg_sum / len(columns_to_iterate)
-#         df.loc[idx, 'neu_score'] = neu_sum / len(columns_to_iterate)
+#         df.loc[idx,'pos_score']= pos_sum / len(columns_to_iterate)
+#         df.loc[idx,'neg_score']= neg_sum / len(columns_to_iterate)
+#         df.loc[idx,'neu_score']= neu_sum / len(columns_to_iterate)
 
 # # Save results
 # print("Saving results...")
@@ -64,20 +64,19 @@
 # execution_time = end_time - start_time
 # print(f"Completed in {execution_time:.2f} seconds")
 
+#
 import pandas as pd
 import zipfile
 from datetime import timedelta
 
 df2 = pd.read_csv('cleaned_optData.csv')
-df2['expiration'] = pd.to_datetime(df2['expiration'])
+df2['expiration']= pd.to_datetime(df2['expiration'])
 zip_file_path = 'full_history.zip'
 price_cache = {}
+all_pairs = df2[['act_symbol','expiration']].drop_duplicates().reset_index(drop=True)
+all_pairs['close_price']= None  # Initialize with None
 
-# Create a new DataFrame to collect all ticker/expiration pairs
-all_pairs = df2[['act_symbol', 'expiration']].drop_duplicates().reset_index(drop=True)
-all_pairs['close_price'] = None  # Initialize with None
-
-with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
+with zipfile.ZipFile(zip_file_path,'r') as zip_file:
     zip_file_list = zip_file.namelist()
     zip_tickers = [f.split('/')[-1].split('.')[0] for f in zip_file_list if f.startswith('full_history/') and f.endswith('.csv')]
        
@@ -92,10 +91,10 @@ with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
                 with zip_file.open(ticker_file) as file:
                     stock_data = pd.read_csv(file)
                     # Ensure date column is in datetime format
-                    stock_data['date'] = pd.to_datetime(stock_data['date'])
+                    stock_data['date']= pd.to_datetime(stock_data['date'])
                     
                 # Cache the stock data
-                price_cache[ticker] = stock_data
+                price_cache[ticker]= stock_data
                 print(f"Loaded price data for {ticker}: {len(stock_data)} records")
             except Exception as e:
                 print(f"Error reading {ticker_file}: {e}")
@@ -110,45 +109,67 @@ with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
             continue
             
         stock_data = price_cache[ticker]
-        expiration_data = stock_data[stock_data['date'] == expiration_date]
+        expiration_data = stock_data[stock_data['date']== expiration_date]
         
         # If no exact match, try one day before (some options expire on weekends)
         if expiration_data.empty:
             # Try looking for the trading day before expiration
             for days_back in range(1, 5):  # Check up to 4 days back (handles weekends and holidays)
                 check_date = expiration_date - timedelta(days=days_back)
-                expiration_data = stock_data[stock_data['date'] == check_date]
+                expiration_data = stock_data[stock_data['date']== check_date]
                 if not expiration_data.empty:
                     print(f"Found price for {ticker} using date {check_date} instead of {expiration_date}")
                     break
         if not expiration_data.empty:
             close_price = expiration_data['close'].iloc[0]
-            all_pairs.loc[index, 'close_price'] = close_price
+            all_pairs.loc[index,'close_price']= close_price
         else:
             print(f"No price data found for {ticker} on or near {expiration_date}")
 
+# After finding prices
 print(f"Found prices for {all_pairs['close_price'].notna().sum()} out of {len(all_pairs)} ticker/expiration pairs")
 
+# Check columns in all_pairs before merge
+print(f"Columns in all_pairs: {all_pairs.columns.tolist()}")
+
+# Merge once and do it correctly
 result = pd.merge(df2, all_pairs, on=['act_symbol','expiration'], how='left')
 
+# Verify the merge worked and check for the close_price column
+print(f"Columns in result after merge: {result.columns.tolist()}")
+print(f"Number of rows with close_price not null: {result['close_price'].notna().sum()}")
+
 # Calculate moneyness 
-result['moneyness'] = None  # 
-# calls
-call_mask = result['call_put']=='Call'
-result.loc[call_mask, 'moneyness'] = result.loc[call_mask, 'close_price']-result.loc[call_mask, 'strike']
-# puts
-put_mask = result['call_put'] =='Put'
-result.loc[put_mask, 'moneyness'] = result.loc[put_mask,'strike'] -result.loc[put_mask, 'close_price']
-# Classify as ITM/OTM/ATM
-result['position'] = 'Unknown'
-result.loc[result['moneyness'] > 0, 'position']='ITM'  
-result.loc[result['moneyness'] < 0, 'position'] = 'OTM'  # Out of the money
-result.loc[result['moneyness'].abs() < 0.01, 'position'] = 'ATM'  # 
+result['moneyness']= None
 
-result['opt_price'] = result['Bid']+ result['Ask']/2
-result['profit'] =result['moneyness']- result['opt_price']
+# Ensure we only calculate for rows that have close_price values
+valid_data_mask = result['close_price'].notna()
+print(f"Valid rows with close_price data: {valid_data_mask.sum()}")
 
-print(result[['act_symbol', 'expiration', 'strike', 'call_put', 'close_price', 'moneyness', 'position','opt_price','profit']].head(10))
+# Calculate for calls where we have valid close_price
+call_mask = (result['call_put']== 'Call') & valid_data_mask
+if call_mask.sum() > 0:
+    result.loc[call_mask,'moneyness']= result.loc[call_mask,'close_price'] - result.loc[call_mask,'strike']
+    print(f"Calculated moneyness for {call_mask.sum()} call options")
 
-result.to_csv('cleaned_optData.csv', index=False)
+# Calculate for puts where we have valid close_price
+put_mask = (result['call_put']== 'Put') & valid_data_mask
+if put_mask.sum() > 0:
+    result.loc[put_mask,'moneyness']= result.loc[put_mask,'strike'] - result.loc[put_mask,'close_price']
+    print(f"Calculated moneyness for {put_mask.sum()} put options")
+
+# Classify as ITM/OTM/ATM only for rows with calculated moneyness
+result['position']= 'Unknown'
+moneyness_mask = result['moneyness'].notna()
+result.loc[moneyness_mask & (result['moneyness'] > 0),'position']= 'ITM'
+result.loc[moneyness_mask & (result['moneyness'] < 0),'position']= 'OTM'
+result.loc[moneyness_mask & (result['moneyness'].abs() < 0.01),'position']= 'ATM'
+
+result['opt_price']= (result['Bid'] + result['Ask']) / 2
+profit_mask = result['moneyness'].notna() & result['opt_price'].notna()
+
+
+result.loc[profit_mask,'profit']= result.loc[profit_mask,'moneyness'] - result.loc[profit_mask,'opt_price']
+print(result[['act_symbol','expiration','strike','call_put','close_price','moneyness','position','opt_price','profit']].head(10))
+result.to_csv('cleaned_optData_with_prices.csv', index=False)
 print(f"Saved data with {result['close_price'].notna().sum()} price points to cleaned_optData_with_prices.csv")

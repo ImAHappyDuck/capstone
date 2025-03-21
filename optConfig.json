@@ -100,7 +100,7 @@
   "transforming": [
     {
         "action": "split_date",
-        "attribute": "Date",
+        "attribute": "date",
         "args": [],
         "kwargs": {}
       }

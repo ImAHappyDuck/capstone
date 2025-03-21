@@ -17,68 +17,83 @@ import sys
 scriptdir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(scriptdir)
 
-# removed capstone.
 # load all the necessary functions for this package
 from data_loader import load_data, save_data
 from data_cleaner import remove_missing, fix_missing
 from data_transformer import transform_feature
 from data_inspector import make_plot
 
+def filter_csv_by_year(file_path, year_column, years, chunksize=10000):
+    filtered_chunks = []
+    chunk_count = 0
+    for chunk in pd.read_csv(file_path, chunksize=chunksize):
+        chunk_count += 1
+        print(f"Processing chunk {chunk_count}")
+        chunk[year_column] = pd.to_datetime(chunk[year_column])
+        filtered_chunk = chunk[chunk[year_column].dt.year.isin(years)]
+        filtered_chunks.append(filtered_chunk)
+    print(f"Finished processing {chunk_count} chunks")
+    return pd.concat(filtered_chunks)
+
 def main(args: Namespace):
     print("in Main")
     # load the configuration from the JSON config file
     config: Config = load_config(args.config)
-    # load the columns specified into a DataFrame
-    dtypes: dict[str,DTypeLike] = {attr_name:get_datatype(attr_config.type) \
-            for attr_name,attr_config in config.attributes.items()}
-    missing: dict[str,set[str]] = {attr_name:set(attr_config.missing_values) \
-            for attr_name,attr_config in config.attributes.items() \
-                if attr_config.missing_values is not None}
-    df: pd.DataFrame = load_data(config.raw_dataset_path, columns=dtypes, missing=missing)
-    # rename any attributes with the rename attribute
-    col_renames = {attr_name:attr_config.rename \
-                        for attr_name,attr_config in config.attributes.items() \
-                            if attr_config.rename is not None}
+    
+    # Filter the CSV file by year before loading it into memory
+    years_to_filter = [2020]  
+    df = filter_csv_by_year(config.raw_dataset_path, 'date', years_to_filter)
+    
+    # Define data types and missing values
+    dtypes: dict[str, DTypeLike] = {attr_name: get_datatype(attr_config.type) 
+                                    for attr_name, attr_config in config.attributes.items()}
+    missing: dict[str, set[str]] = {attr_name: set(attr_config.missing_values) 
+                                    for attr_name, attr_config in config.attributes.items() 
+                                    if attr_config.missing_values is not None}
+    
+    # Rename any attributes with the rename attribute
+    col_renames = {attr_name: attr_config.rename 
+                   for attr_name, attr_config in config.attributes.items() 
+                   if attr_config.rename is not None}
     df = df.rename(columns=col_renames)
-    # fix missing vaules according to the attribute specifications
+    
+    # Fix missing values according to the attribute specifications
     for clean_step in config.clean_steps:
         if clean_step.missing_strategy == 'remove':
             df = remove_missing(df, clean_step.attribute)
         else:
             df = fix_missing(df, clean_step.attribute, clean_step.missing_strategy)
-    # apply any transformations in order the are specified
+    
+    # Apply any transformations in order they are specified
     for ts in config.transform_steps:
         transform_feature(df, ts.attribute, ts.action, ts.args, ts.kwargs)
-    # save the data at the determined location
+    
+    # Save the data at the determined location
     save_data(df, config.clean_dataset_path)
-    # make all requested plots saving them in the plot directory
+    
+    # Make all requested plots saving them in the plot directory
     for plot_step in config.plotting_steps:
-        # create the requested plot image
+        # Create the requested plot image
         img = make_plot(df, plot_step.attribute, plot_step.action, plot_step.args, plot_step.kwargs)
-        # save this image in the plots directory with the requested file name
+        # Save this image in the plots directory with the requested file name
         save_plot(img, config.plot_directory_path, plot_step.name)
-
-        # img.savefig(os.path.join(config.plot_directory_path, f"{plot_step.name}.png"))
-
-
-
-
 
 class Config(NamedTuple):
     raw_dataset_path: str
     clean_dataset_path: str
     plot_directory_path: str
-    attributes: dict[str,AttributeConfig]
+    attributes: dict[str, AttributeConfig]
     clean_steps: list[CleanConfig]
     transform_steps: list[TransformConfig]
     plotting_steps: list[PlotConfig]
+    
     @staticmethod
-    def parse(d: dict[str,Any]) -> Config:
+    def parse(d: dict[str, Any]) -> Config:
         return Config(
             str(d['raw_dataset_path']),
             str(d['clean_dataset_path']),
             str(d['plot_directory_path']),
-            {k:AttributeConfig.parse(v) for k,v in d['attributes'].items()},
+            {k: AttributeConfig.parse(v) for k, v in d['attributes'].items()},
             [CleanConfig.parse(e) for e in d['cleaning']],
             [TransformConfig.parse(e) for e in d['transforming']],
             [PlotConfig.parse(e) for e in d['plotting']]
@@ -86,10 +101,11 @@ class Config(NamedTuple):
 
 class AttributeConfig(NamedTuple):
     type: str
-    rename: str|None
-    missing_values: set[str]|None
+    rename: str | None
+    missing_values: set[str] | None
+    
     @staticmethod
-    def parse(d: dict[str,Any]) -> AttributeConfig:
+    def parse(d: dict[str, Any]) -> AttributeConfig:
         return AttributeConfig(
             d['type'],
             d.get('rename'),
@@ -99,8 +115,9 @@ class AttributeConfig(NamedTuple):
 class CleanConfig(NamedTuple):
     attribute: str
     missing_strategy: str
+    
     @staticmethod
-    def parse(d: dict[str,Any]) -> CleanConfig:
+    def parse(d: dict[str, Any]) -> CleanConfig:
         return CleanConfig(
             d['attribute'],
             d['missing_strategy']
@@ -110,9 +127,10 @@ class TransformConfig(NamedTuple):
     action: str
     attribute: str
     args: list[Any]
-    kwargs: dict[str,Any]
+    kwargs: dict[str, Any]
+    
     @staticmethod
-    def parse(d: dict[str,Any]) -> TransformConfig:
+    def parse(d: dict[str, Any]) -> TransformConfig:
         return TransformConfig(
             d['action'],
             d['attribute'],
@@ -125,9 +143,10 @@ class PlotConfig(NamedTuple):
     attribute: str
     name: str
     args: list[Any]
-    kwargs: dict[str,Any]
+    kwargs: dict[str, Any]
+    
     @staticmethod
-    def parse(d: dict[str,Any]) -> PlotConfig:
+    def parse(d: dict[str, Any]) -> PlotConfig:
         return PlotConfig(
             d['action'],
             d['attribute'],
@@ -154,18 +173,15 @@ def save_plot(img: Any, plot_directory_path: str, plot_name: str):
 
 def get_datatype(name: str) -> DTypeLike:
     match name:
-        # case 'datetime':return pd.Timestamp
         case 'real': return np.float32
         case 'nominal': return np.unicode_
         case _: raise ValueError(f"Unrecognized attribute type {name}")
 
-
-
-if __name__=='__main__':
+if __name__ == '__main__':
     parser = ArgumentParser(description=(
         "Run a data cleaning and transformation pipeline on the specified dataset "
-        "using the proceedures defined in the provided configuration file."
+        "using the procedures defined in the provided configuration file."
     ))
-    parser.add_argument('config', type=str, help='path to JSON config file with proceedures')
+    parser.add_argument('config', type=str, help='path to JSON config file with procedures')
     args = parser.parse_args()
     main(args)
