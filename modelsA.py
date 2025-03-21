@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore")
 from sklearn.ensemble import RandomForestClassifier
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model", choices=["a", "b", "c"], required=True, help="a, b, or c?")
+parser.add_argument("--model", choices=["a", "b", "c","d"], required=True, help="models are a, b, c, or d")
 args = parser.parse_args()
 
 if args.model == "a":
@@ -112,7 +112,38 @@ elif args.model == "c":
     print(conf_matrix)
     print("\nClassification Report:")
     print(class_report)
+    
+# model d, random forest classifier using the columns found in feature selection using higher depth
+elif args.model == "d":
+    df = pd.read_csv('cleaned_optData.csv')
+    data = df[df['moneyness'].isna() == False]
+    data['num_position'] = data['position'].apply(lambda x: 1 if x == 'ITM' else 0)
 
+    X = data[['bid', 'ask','rho']]
+    y = data['num_position']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    model = RandomForestClassifier(n_estimators=100, max_depth=3, random_state=0)
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    print(f'Mean Squared Error: {mse}')
+    print(f'R^2 Score: {r2}')
+
+    accuracy = accuracy_score(y_test, y_pred)
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    class_report = classification_report(y_test, y_pred)
+
+    print(f"Accuracy: {accuracy:.4f}")
+    print("\nConfusion Matrix:")
+    print(conf_matrix)
+    print("\nClassification Report:")
+    print(class_report)
     
  
 
