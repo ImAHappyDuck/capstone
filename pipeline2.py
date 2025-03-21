@@ -163,9 +163,8 @@ result['position']= 'Unknown'
 moneyness_mask = result['moneyness'].notna()
 result.loc[moneyness_mask & (result['moneyness'] > 0),'position']= 'ITM'
 result.loc[moneyness_mask & (result['moneyness'] < 0),'position']= 'OTM'
-result.loc[moneyness_mask & (result['moneyness'].abs() < 0.01),'position']= 'ATM'
-
-result['opt_price']= (result['Bid'] + result['Ask']) / 2
+result.loc[moneyness_mask & (result['moneyness'].fillna(float('nan')).abs() < 0.01),'position']= 'ATM'
+result['opt_price']= (result['bid'] + result['ask']) / 2
 profit_mask = result['moneyness'].notna() & result['opt_price'].notna()
 
 

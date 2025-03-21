@@ -15,7 +15,7 @@ if args.model == "logistic":
 
 
     #Model 1, Logistic regression predicting ITM or OTM
-    df = pd.read_csv('cleaned_optData.csv')
+    df = pd.read_csv('cleaned_optData_with_prices.csv')
     data = df[df['moneyness'].isna() == False]
     data['num_position'] = data['position'].apply(lambda x: 1 if x == 'ITM' else 0)
 
