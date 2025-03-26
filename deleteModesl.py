@@ -5,8 +5,10 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 # Load data
-df = pd.read_csv('cleaned_optData.csv')
+df = pd.read_csv('cleaned_optData_with_prices.csv')
 df2 = pd.read_csv('cleanedFinNews.csv')
+print(df['profit'].mean())
+
 
 # Filter and clean data
 df = df[df['moneyness'].notna() & (df['moneyness'] != 0)]
