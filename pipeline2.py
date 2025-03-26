@@ -69,6 +69,36 @@ import pandas as pd
 import zipfile
 from datetime import timedelta
 
+def get_stock_price(stock_data, target_date):
+    exact_match = stock_data[stock_data['date'] == target_date]
+    if not exact_match.empty:
+        return exact_match['close'].iloc[0]
+    
+    for days_back in range(1, 6):
+        check_date = target_date - timedelta(days=days_back)
+        date_match = stock_data[stock_data['date'] == check_date]
+        if not date_match.empty:
+            return date_match['close'].iloc[0]
+    
+    return None
+def calculate_stock_delta(stock_data, current_date):
+    """Calculate 60-day stock delta, handling weekend/non-trading days."""
+    stock_data = stock_data.sort_values('date')
+    sixty_days_ago = current_date - timedelta(days=60)
+    past_dates = stock_data[stock_data['date'] <= sixty_days_ago]
+    if past_dates.empty:
+        return None
+    
+
+    closest_past_date = past_dates.loc[past_dates['date'].idxmax()]
+    past_price = closest_past_date['close']
+    current_price = get_stock_price(stock_data, current_date)
+    
+    if current_price is None or past_price is None:
+        return None
+    delta = ((current_price - past_price) / past_price) * 100
+    return delta
+
 df2 = pd.read_csv('cleaned_optData.csv')
 df2['expiration']= pd.to_datetime(df2['expiration'])
 zip_file_path = 'full_history.zip'
@@ -139,8 +169,11 @@ result = pd.merge(df2, all_pairs, on=['act_symbol','expiration'], how='left')
 print(f"Columns in result after merge: {result.columns.tolist()}")
 print(f"Number of rows with close_price not null: {result['close_price'].notna().sum()}")
 
-# Calculate moneyness 
+#Initialize columns for synthetic features
 result['moneyness']= None
+result['current_stock_price'] = None
+result['stock_delta_60days'] = None
+result['date'] = pd.to_datetime(result['date'])
 
 # Ensure we only calculate for rows that have close_price values
 valid_data_mask = result['close_price'].notna()
@@ -157,6 +190,17 @@ put_mask = (result['call_put']== 'Put') & valid_data_mask
 if put_mask.sum() > 0:
     result.loc[put_mask,'moneyness']= result.loc[put_mask,'strike'] - result.loc[put_mask,'close_price']
     print(f"Calculated moneyness for {put_mask.sum()} put options")
+
+## This adds the current stock price, and delta columns
+for index, row in result.iterrows():
+    ticker = row['act_symbol']
+    current_date = row['date']
+    
+    if ticker in price_cache:
+        stock_data = price_cache[ticker]
+        
+        result.loc[index, 'current_stock_price'] = get_stock_price(stock_data, current_date)
+        result.loc[index, 'stock_delta_60days'] = calculate_stock_delta(stock_data, current_date)
 
 # Classify as ITM/OTM/ATM only for rows with calculated moneyness
 result['position']= 'Unknown'
