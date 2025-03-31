@@ -19,14 +19,13 @@ sentiment_by_stock = sentiment_by_stock.rename(columns={
         'pos_score': 'avg_pos_score',
         'neg_score': 'avg_neg_score'})
 
-df = df.merge(   sentiment_by_stock,  left_on='act_symbol',  right_on='Stock_symbol',   how='left'
-    )
-
+df = df.merge(sentiment_by_stock,  left_on='act_symbol',  right_on='Stock_symbol', how='left')
+df = df[df['call_put'] == "Put"]
 # average profit
 averageProfit = df['profit'].mean()
 print(averageProfit)
 
-X = df[['delta', 'gamma', 'theta', 'vega', 'rho', 'vol', 'ask', 'bid', 'avg_pos_score', 'avg_neg_score']]
+X = df[['delta', 'gamma', 'theta', 'vega', 'rho', 'vol', 'ask', 'bid', 'avg_pos_score', 'avg_neg_score','current_stock_price','stock_delta_60days']]
 y = df['profit']
 X = X.fillna(X.mean())
 
@@ -63,3 +62,5 @@ y_pred = model.predict(X_test)
 average_projected_profit = np.mean(y_pred)
 print(f"Projected Profit: {average_projected_profit:.4f}")
 joblib.dump(model, 'linear_regression_model.pkl')
+
+

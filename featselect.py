@@ -2,15 +2,17 @@ from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
-df = pd.read_csv('cleaned_optData.csv')
+df = pd.read_csv('cleaned_optData_with_prices.csv')
 df = df.dropna()
 #seperate out calls and puts
 df = df[df['call_put'] == "Put"]
 numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
 numeric_cols.remove('moneyness') 
+numeric_cols.remove('profit') 
+
 
 X = df[numeric_cols]
-y = df['moneyness']
+y = df['profit']
 # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
