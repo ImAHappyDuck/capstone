@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore")
 from sklearn.ensemble import RandomForestClassifier
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model", choices=["a", "b", "c","d"], required=True, help="models are a, b, c, or d")
+parser.add_argument("--model", choices=["a", "b", "c","d", "posneg1", "posneg2", "posneg3"], required=True, help="models are a, b, c, d, posneg1, posneg2, or posneg3")
 args = parser.parse_args()
 
 if args.model == "a":
@@ -145,6 +145,101 @@ elif args.model == "d":
     print("\nClassification Report:")
     print(class_report)
     
- 
+# model posneg1, logistic regression on posneg
+elif args.model == "posneg1":
+    df = pd.read_csv('cleaned_optData_with_prices.csv')
+    data = df[df['moneyness'].isna() == False]
+    data['posneg'] = data['profit'].apply(lambda x: 1 if x > 0 else 0)
 
-    
+    X = data[['bid', 'delta', 'gamma', 'theta', 'vega', 'rho']]
+    y = data['posneg']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    model = LogisticRegression()
+
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    print(f'Mean Squared Error: {mse}')
+    print(f'R^2 Score: {r2}')
+
+    accuracy = accuracy_score(y_test, y_pred)
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    class_report = classification_report(y_test, y_pred)
+
+    print(f"Accuracy: {accuracy:.4f}")
+    print("\nConfusion Matrix:")
+    print(conf_matrix)
+    print("\nClassification Report:")
+    print(class_report)
+
+# model posneg2, logistic regression on posneg with feature select columns
+elif args.model == "posneg2":
+    df = pd.read_csv('cleaned_optData_with_prices.csv')
+    data = df[df['moneyness'].isna() == False]
+    data['posneg'] = data['profit'].apply(lambda x: 1 if x > 0 else 0)
+
+    X = data[['strike', 'rho', 'close_price']]
+    y = data['posneg']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    model = LogisticRegression()
+
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    print(f'Mean Squared Error: {mse}')
+    print(f'R^2 Score: {r2}')
+
+    accuracy = accuracy_score(y_test, y_pred)
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    class_report = classification_report(y_test, y_pred)
+
+    print(f"Accuracy: {accuracy:.4f}")
+    print("\nConfusion Matrix:")
+    print(conf_matrix)
+    print("\nClassification Report:")
+    print(class_report)
+
+# model posneg3, random forest on posneg with feature select columns
+elif args.model == "posneg3":
+    df = pd.read_csv('cleaned_optData_with_prices.csv')
+    data = df[df['moneyness'].isna() == False]
+    data['posneg'] = data['profit'].apply(lambda x: 1 if x > 0 else 0)
+
+    X = data[['strike', 'rho', 'close_price']]
+    y = data['posneg']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    model = RandomForestClassifier(n_estimators=100, max_depth=3, random_state=0)
+
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    print(f'Mean Squared Error: {mse}')
+    print(f'R^2 Score: {r2}')
+
+    accuracy = accuracy_score(y_test, y_pred)
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    class_report = classification_report(y_test, y_pred)
+
+    print(f"Accuracy: {accuracy:.4f}")
+    print("\nConfusion Matrix:")
+    print(conf_matrix)
+    print("\nClassification Report:")
+    print(class_report)
