@@ -20,12 +20,12 @@ sentiment_by_stock = sentiment_by_stock.rename(columns={
         'neg_score': 'avg_neg_score'})
 
 df = df.merge(sentiment_by_stock,  left_on='act_symbol',  right_on='Stock_symbol', how='left')
-df = df[df['call_put'] == "Put"]
+df = df[df['call_put'] == "Call"]
 # average profit
 averageProfit = df['profit'].mean()
 print(averageProfit)
 
-X = df[['delta', 'gamma', 'theta', 'vega', 'rho', 'vol', 'ask', 'bid', 'avg_pos_score', 'avg_neg_score','current_stock_price','stock_delta_60days']]
+X = df[['delta', 'gamma', 'theta', 'vega', 'rho', 'vol', 'ask', 'bid', 'avg_pos_score', 'avg_neg_score','current_stock_price','stock_delta_60days','date_month','date_day']]
 y = df['profit']
 X = X.fillna(X.mean())
 

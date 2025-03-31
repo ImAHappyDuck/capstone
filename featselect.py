@@ -9,6 +9,7 @@ df = df[df['call_put'] == "Put"]
 numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
 numeric_cols.remove('moneyness') 
 numeric_cols.remove('profit') 
+numeric_cols.remove('stock_price_at_expiration') 
 
 
 X = df[numeric_cols]
@@ -17,7 +18,7 @@ y = df['profit']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-selector = SelectKBest(score_func=f_regression, k=13)
+selector = SelectKBest(score_func=f_regression, k=1)
 X_train_selected = selector.fit_transform(X_train, y_train)
 X_test_selected = selector.transform(X_test)
 selected_features = X.columns[selector.get_support()].tolist()

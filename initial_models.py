@@ -19,7 +19,7 @@ if args.model == "logistic":
     data = df[df['moneyness'].isna() == False]
     data['num_position'] = data['position'].apply(lambda x: 1 if x == 'ITM' else 0)
 
-    X = data[['bid', 'delta', 'gamma', 'theta', 'vega', 'rho']]
+    X = data[['bid','delta', 'gamma', 'theta', 'vega', 'rho']]
     y = data['num_position']
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
