@@ -390,11 +390,34 @@ from datetime import timedelta
 # df2.to_csv('cleaned_optData_with_prices.csv', index=False)
 # print(f"Saved {df2.shape[0]} rows to cleaned_optData_with_prices.csv")
 
-
-
 df = pd.read_csv('cleaned_optData_with_prices.csv')
-## add (strike price - current stock)/opt_price to get priceDelta
-df['priceDelta'] = (df['strike'] - df['current_stock_price'])/ df['opt_price']
-print(df['priceDelta'])
+df2 = pd.read_csv('cleanedFinNews.csv')
+df = df[df['profit'].notna() & (df['profit'] != 0)]
+print(df.columns)
+df2['month_year'] = pd.to_datetime(df2['Date']).dt.to_period('M')
+sentiment_by_stock_month = df2.groupby(['Stock_symbol', 'month_year']).agg({
+    'pos_score': 'mean', 
+    'neg_score': 'mean'
+}).reset_index()
+
+sentiment_by_stock_month = sentiment_by_stock_month.rename(columns={
+    'pos_score': 'avg_pos_score', 
+    'neg_score': 'avg_neg_score'
+})
+
+df['month_year'] = pd.to_datetime(df['date']).dt.to_period('M')
+
+df = df.merge(
+    sentiment_by_stock_month, 
+    left_on=['act_symbol', 'month_year'], 
+    right_on=['Stock_symbol', 'month_year'],
+    how='left',
+    suffixes=('', '_drop')  # Prevents duplicate suffix error
+)
+
+df = df.drop(columns=[col for col in df.columns if col.endswith('_drop') or col in ['month_year', 'Stock_symbol']])
+df = df.drop(['Stock_symbol_x','Stock_symbol_y'],errors='ignore', axis=1)  
+
+
 df.to_csv('cleaned_optData_with_prices.csv', index=False)
-print("file savled")
+print("file saved")
