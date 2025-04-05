@@ -5,7 +5,7 @@ import seaborn as sns
 import numpy as np
 df = pd.read_csv('cleaned_optData_with_prices.csv')
 ## Randomly sample 50000 rows for faster plotting
-df = df.sample(n=50000, random_state=23) 
+df = df.sample(n=100000, random_state=23) 
 dfp= df[df['profit'].notna() & (df['profit'] > 0)]
 
 
@@ -18,19 +18,19 @@ dfp= df[df['profit'].notna() & (df['profit'] > 0)]
 # plt.ylabel("Average Profit Delta")
 # plt.show()
 
-##plot profit vs rho 
-df.plot.scatter(x='rho', y='profit', alpha=0.5)
-plt.title('Scatter Plot of Rho vs Profit')
-plt.xlabel('Rho')
-plt.ylabel('Profit')
-plt.show()
-
-## plot of pos_sentiment vs profit
-# df.plot.scatter(x='pos_sentiment', y='profit', alpha=0.5)
-# plt.xlabel('Positive Sentiment Score')
+# ##plot profit vs rho 
+# df.plot.scatter(x='rho', y='profit', alpha=0.5)
+# plt.title('Scatter Plot of Rho vs Profit')
+# plt.xlabel('Rho')
 # plt.ylabel('Profit')
-# plt.title('Scatter Plot of Positive Sentiment vs Profit')
 # plt.show()
+
+# plot of pos_sentiment vs profit
+df.plot.scatter(x='avg_pos_score', y='profit', alpha=0.5)
+plt.xlabel('Positive Sentiment Score')
+plt.ylabel('Profit')
+plt.title('Scatter Plot of Positive Sentiment vs Profit')
+plt.show()
 
 ## calculate what percentage of trades are profitable
 total_trades = len(df)
