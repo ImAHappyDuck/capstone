@@ -8,26 +8,27 @@ import joblib
 import argparse
 
 
-df = pd.read_csv('cleaned_optData_with_prices.csv')
+df = pd.read_csv('train.csv')
 
-df2 = pd.read_csv('cleanedFinNews.csv')
-df = df[df['profit'].notna() & (df['profit'] != 0)]
+# df2 = pd.read_csv('cleanedFinNews.csv')
+# df = df[df['profit'].notna() & (df['profit'] != 0)]
 
-sentiment_by_stock = df2.groupby('Stock_symbol').agg({
-        'pos_score': 'mean', 'neg_score': 'mean'}).reset_index()
-sentiment_by_stock = sentiment_by_stock.rename(columns={
-        'pos_score': 'avg_pos_score',
-        'neg_score': 'avg_neg_score'})
+# sentiment_by_stock = df2.groupby('Stock_symbol').agg({
+#         'pos_score': 'mean', 'neg_score': 'mean'}).reset_index()
+# sentiment_by_stock = sentiment_by_stock.rename(columns={
+#         'pos_score': 'avg_pos_score',
+#         'neg_score': 'avg_neg_score'})
 
-df = df.merge(sentiment_by_stock,  left_on='act_symbol',  right_on='Stock_symbol', how='left')
+# df = df.merge(sentiment_by_stock,  left_on='act_symbol',  right_on='Stock_symbol', how='left')
+# df = df[df['call_put'] == "Call"]
+# # average profit
+# averageProfit = df['profit'].mean()
+# print(averageProfit)
+df = df.dropna()
 df = df[df['call_put'] == "Call"]
-# average profit
-averageProfit = df['profit'].mean()
-print(averageProfit)
-
-X = df[['delta', 'gamma', 'theta', 'vega', 'rho', 'vol', 'ask', 'bid', 'avg_pos_score', 'avg_neg_score','current_stock_price','stock_delta_60days','date_month','date_day']]
+X = df.select_dtypes(include=[np.number]) 
+X = X.drop(columns=['profit', 'moneyness', 'stock_price_at_expiration'], errors='ignore')  
 y = df['profit']
-X = X.fillna(X.mean())
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
