@@ -32,8 +32,8 @@ for date, group in df.groupby('date'):
     yPred = model.predict(X_day)
     group['predictedProfit'] = yPred
 
-    threshold = np.percentile(yPred, 97)
-    top_trades = group[group['predictedProfit'] >= 35]
+    threshold = np.percentile(yPred, 99.5)  # Top 2.5% of predicted profits
+    top_trades = group[group['predictedProfit'] >= threshold ]
     
     actualProfit = top_trades['profit'].sum()
     predictedProfit = top_trades['predictedProfit'].sum()
@@ -44,14 +44,19 @@ for date, group in df.groupby('date'):
     print(f"Predicted profit: {predictedProfit:.2f}")
     print(f"Actual profit: {actualProfit:.2f}")
     print(f"cost of contracts: {top_trades['opt_price'].sum():.2f}")
-    print(f'actual percent return: {(predictedProfit  / top_trades["opt_price"].sum()) * 100:.2f}%')
+    print(f'actual percent return: {(actualProfit  / top_trades["opt_price"].sum()) * 100:.2f}%')
+    print(f'average predicted profit: {top_trades["predictedProfit"].mean():.2f}')
+    print(f'average actual profit: {top_trades["profit"].mean():.2f}')
     print('\n'*2)
     # print(f"Win rate: {win_rate}\n")
+    ## Print the row from df with the highest profit for that day
+    # print(group.loc[group['predictedProfit'].idxmax()])
     
     selected_trades_list.append(top_trades)
 
-    baseline_trades = group[group['delta'].abs() > 0.6].sample(frac=0.05, random_state=2)
+    baseline_trades = group[(group['delta'].abs() > 0.8) & (group['vol'] > group['vol'].median()) ]
     baseline_profit = baseline_trades['profit'].sum()
+
     
     daily_profits.append({
         'date': date,
