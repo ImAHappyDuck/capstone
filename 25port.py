@@ -15,8 +15,8 @@ df['date'] = pd.to_datetime(df['date'])
 df['expiration'] = pd.to_datetime(df['expiration'])
 df = df.sort_values('date')
 ##initialize portfolio
-starting_balance = 25000
-cashReserveRate = 0.7
+starting_balance = 10000
+cashReserveRate = 0.5
 portfolio_value = starting_balance
 cash_reserve = portfolio_value * cashReserveRate
 available_investment = portfolio_value -cash_reserve
@@ -26,8 +26,8 @@ finalPVal = 0
 total_profit = 0
 ## run 1k simulations of portfolios and averages performance
 
-n=20
-n = 12
+
+n = 1000
 final_portfolio_values = []
 for _ in range(n):
     portfolio_value = starting_balance
@@ -65,11 +65,11 @@ for _ in range(n):
 
 
         # Top 1% trades
-        threshold = np.percentile(group['predicted_profit'], 90)
+        threshold = np.percentile(group['predicted_profit'], 99)
         candidates = group[group['predicted_profit'] >= threshold]
 
         for _, trade in candidates.iterrows():
-            if random.random() > 0.55:
+            if random.random() > 0.5:
                 continue
             cost = trade['opt_price']*100
             profit = trade['profit']*100

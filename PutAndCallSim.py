@@ -26,8 +26,8 @@ df = df.sort_values('date')
 
 # Simulation settings
 starting_balance = 10000
-cashReserveRate = 0.7
-n_simulations = 35
+cashReserveRate = 0.5
+n_simulations = 10
 
 finalPVal = 0
 total_profit = 0
@@ -45,8 +45,8 @@ for _ in range(n_simulations):
         for trade in list(open_trades):
             if trade['expiration'] <= date:
                 profit = trade['profit']
-                # if profit < 0:
-                #     profit = -trade['cost']  
+                if profit < 0:
+                    profit = -trade['cost']  
                 trade_total = profit + trade['cost'] 
                 available_investment += trade_total
                 open_trades.remove(trade)
@@ -79,11 +79,11 @@ for _ in range(n_simulations):
         group = pd.concat([call_group, put_group])
 
         # Select top 5% trades
-        threshold = np.percentile(group['predicted_profit'], 95)
+        threshold = np.percentile(group['predicted_profit'], 99)
         candidates = group[group['predicted_profit'] >= threshold]
 
         for _, trade in candidates.iterrows():
-            if random.random() > 0.65:
+            if random.random() > 0.5:
                 continue
             cost = trade['opt_price'] 
             profit = trade['profit']
