@@ -12,10 +12,11 @@ import argparse
 df = pd.read_csv('train.csv')
 
 df = df.dropna()
-df = df[df['call_put'] == 'Put']
+df = df[df['call_put'] == 'Call']
 X = df.select_dtypes(include=[np.number]) 
 X = X.drop(columns=['profit', 'moneyness', 'stock_price_at_expiration'], errors='ignore')  
 y = df['profit']
+# print(df)
 
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2)
@@ -54,6 +55,6 @@ print(f"Random Baseline Profit: {average}")
 y_pred = model.predict(X_test)
 average_projected_profit = np.mean(y_pred)
 print(f"Projected Profit: {average_projected_profit:.4f}")
-joblib.dump(model, 'putModel.pkl')
+joblib.dump(model, 'callModel.pkl')
 
 

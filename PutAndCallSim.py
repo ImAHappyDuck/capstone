@@ -26,7 +26,7 @@ df = df.sort_values('date')
 
 # Simulation settings
 starting_balance = 10000
-cashReserveRate = 0.5
+cashReserveRate = 0.3
 n_simulations = 10
 
 finalPVal = 0
@@ -58,7 +58,7 @@ for _ in range(n_simulations):
         available_investment = portfolio_value - cash_reserve - tied_up
 
         # Short-term trades
-        group = group[group['expiration'] <= date + pd.Timedelta(days=60)]
+        group = group[group['expiration'] <= date + pd.Timedelta(days=32)]
 
         if group.empty:
             continue
@@ -79,7 +79,7 @@ for _ in range(n_simulations):
         group = pd.concat([call_group, put_group])
 
         # Select top 5% trades
-        threshold = np.percentile(group['predicted_profit'], 99)
+        threshold = np.percentile(group['predicted_profit'], 98)
         candidates = group[group['predicted_profit'] >= threshold]
 
         for _, trade in candidates.iterrows():
@@ -104,8 +104,8 @@ for _ in range(n_simulations):
     total_profit += portfolio_value - starting_balance
     portfolio_df = pd.DataFrame(portfolio_over_time).sort_values('date')
     # plt.figure(figsize=(12, 6))
-    # plt.plot(portfolio_df['date'], portfolio_df['portfolio_value'], label='Portfolio Value', color='blue')
-    # plt.title('Simulated Portfolio Performance ($25,000 Starting Value, with 70% Cash Reserve)')
+    # plt.plot(portfolio_df['date'], portfolio_df['portfolio_value'], label='Portfolio Value', color='green')
+    # plt.title('Simulated Portfolio Performance ($10,000 Starting Value, and maintaining a 50% Cash Reserve)')
     # plt.xlabel('Date')
     # plt.ylabel('Portfolio Value')
     # plt.grid(True)
@@ -120,8 +120,8 @@ print("Average Final Portfolio Value: ", round(avg_final_port_value, 2))
 print("Average Return: ", round(avg_return * 100, 2), "%")
 
 plt.figure(figsize=(12, 6))
-plt.plot(portfolio_df['date'], portfolio_df['portfolio_value'], label='Portfolio Value', color='blue')
-plt.title('Simulated Portfolio Performance ($25,000 Starting Value, with 70% Cash Reserve)')
+plt.plot(portfolio_df['date'], portfolio_df['portfolio_value'], label='Portfolio Value', color='green')
+plt.title('Simulated Portfolio Performance ($10,000 Starting Value, and maintaining a 50% Cash Reserve)')
 plt.xlabel('Date')
 plt.ylabel('Portfolio Value')
 plt.grid(True)

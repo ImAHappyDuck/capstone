@@ -15,10 +15,10 @@ df['date'] = pd.to_datetime(df['date'])
 df['expiration'] = pd.to_datetime(df['expiration'])
 df = df.sort_values('date')
 ##initialize portfolio
-starting_balance = 10000
-cashReserveRate = 0.5
-portfolio_value = starting_balance
-cash_reserve = portfolio_value * cashReserveRate
+starting_balance= 10000
+cashReserveRate= 0.5
+portfolio_value= starting_balance
+cash_reserve =portfolio_value * cashReserveRate
 available_investment = portfolio_value -cash_reserve
 portfolio_over_time = []
 open_trades = []
@@ -27,7 +27,7 @@ total_profit = 0
 ## run 1k simulations of portfolios and averages performance
 
 
-n = 1000
+n = 10
 final_portfolio_values = []
 for _ in range(n):
     portfolio_value = starting_balance
