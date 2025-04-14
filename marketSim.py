@@ -8,14 +8,15 @@
 
 import pandas as pd
 import numpy as np
-df = pd.read_csv('test.csv')
+df = pd.read_csv('test.csv') 
+# df = df.drop(columns=['Unnamed: 0'])
 ##Model is trained on call options only
-df = df[df['call_put'] == "Put"]
+df = df[df['call_put'] == "Call"]
 ##comment out for big budgets 
 # df= df[df['opt_price'] < 30]
 import joblib
 # model = joblib.load('linear_regression_model.pkl')
-model = joblib.load('putModel.pkl')
+model = joblib.load('callModel.pkl')
 
 features = model.feature_names_in_
 df = df.dropna(subset=features)
@@ -135,7 +136,7 @@ import matplotlib.pyplot as plt
 
 daily_profits_df["profit_cat"] = daily_profits_df["actual_profit"].apply(lambda x: "pos" if x > 0 else "neg")
 
-sns.countplot(x="profit_cat", data=daily_profits_df, palette="Set2")
+sns.countplot(x="profit_cat", data=daily_profits_df, order=['pos','neg'],palette="Set2")
 plt.title("P/L Distribution")
 plt.xlabel("Profit Category")
 plt.ylabel("Count of Days")

@@ -43,7 +43,7 @@ print(df.shape)
 df['priceRatio'] = df['strike'] - df['current_stock_price'] / df['opt_price']
 
 df['percent_to_strike'] =(df['strike'] /df['current_stock_price'])
-df['call_put'] = df['call_put'].map({'Call': 1, 'Put': 0})
+# df['call_put'] = df['call_put'].map({'Call': 1, 'Put': 0})
 
 
 
@@ -105,7 +105,6 @@ def add_implied_volatility(df,risk_free_rate=0.0431):
 
 
 df =add_implied_volatility(df)
-df['opt_price'] = (df['bid'] + df['ask'])/2
 
 df.drop(columns=['time_to_exp'],inplace=True)
 df.to_csv('NewestDataset.csv',index=False)

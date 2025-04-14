@@ -384,6 +384,7 @@ if stock_delta_list:
 stock_delta_df = pd.read_csv(delta_progress_file)
 stock_delta_df['date'] = pd.to_datetime(stock_delta_df['date'])
 df2 = df2.merge(stock_delta_df, on=['act_symbol', 'date'], how='left')
+df2['opt_price'] = (df2['bid'] + df2['ask'])/2
 
 
 # Save results
