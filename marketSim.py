@@ -151,7 +151,7 @@ import matplotlib.pyplot as plt
 
 daily_profits_df["profit_cat"] = daily_profits_df["actual_profit"].apply(lambda x: "pos" if x > 0 else "neg")
 
-sns.countplot(x="profit_cat", data=daily_profits_df, palette="Set2")
+sns.countplot(x="profit_cat", data=daily_profits_df, order=['pos','neg'],palette="Set2")
 plt.title("P/L Distribution")
 plt.xlabel("Profit Category")
 plt.ylabel("Count of Days")
