@@ -8,14 +8,15 @@
 
 import pandas as pd
 import numpy as np
-df = pd.read_csv('test.csv')
+df = pd.read_csv('test.csv') 
+# df = df.drop(columns=['Unnamed: 0'])
 ##Model is trained on call options only
-df = df[df['call_put'] == "Put"]
+df = df[df['call_put'] == "Call"]
 ##comment out for big budgets 
 # df= df[df['opt_price'] < 30]
 import joblib
 # model = joblib.load('linear_regression_model.pkl')
-model = joblib.load('putModel.pkl')
+model = joblib.load('callModel.pkl')
 
 features = model.feature_names_in_
 df = df.dropna(subset=features)
