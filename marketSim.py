@@ -35,7 +35,7 @@ for date, group in df.groupby('date'):
     yPred = model.predict(X_day)
     group['predictedProfit'] = yPred
 
-    threshold = np.percentile(yPred, 98.5)  # Top 2.5% of predicted profits
+    threshold = np.percentile(yPred, 99.5)  # Top 2.5% of predicted profits
     top_trades = group[group['predictedProfit'] >= threshold] 
     
     actualProfit = top_trades['profit'].sum()
@@ -125,23 +125,7 @@ def plot_cumulative_profits(daily_profits_df):
     plt.tight_layout()
     plt.show()
 
-plot_cumulative_profits(daily_profits_df)
 
-def plot_cumulative_return(daily_profits_df):
-    daily_profits_df['cumulative_cost'] = daily_profits_df['cost'].cumsum()
-    daily_profits_df['cumulative_return_percent'] = (daily_profits_df['cumulative_actual_profit'] / daily_profits_df['cumulative_cost']) * 100
-
-    plt.figure(figsize=(12, 6))
-    plt.plot(daily_profits_df['date'], daily_profits_df['cumulative_return_percent'], color='purple', label='Cumulative % Return')
-    plt.xlabel('Date')
-    plt.ylabel('Cumulative % Return')
-    plt.title('Cumulative Percent Return Over Time')
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
-
-plot_cumulative_return(daily_profits_df)
 import seaborn as sns
 
 ## make a histogram of actual profit of selected trades

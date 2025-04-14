@@ -8,7 +8,7 @@ df = pd.read_csv('NewestDataset.csv')
 df = df.sample(n=100000, random_state=23) 
 dfp= df[df['profit'].notna() & (df['profit'] > 0)]
 
-
+## read spy stock ticker from full history, and plot 
 
 # dfp.groupby('date')['profit'].mean().plot(kind='line', figsize=(10,5), title="Profit Trend Over Time (Of Profitable Trades)")
 # plt.ylabel("Average Profit")

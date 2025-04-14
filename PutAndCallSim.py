@@ -27,7 +27,7 @@ df = df.sort_values('date')
 # Simulation settings
 starting_balance = 10000
 cashReserveRate = 0.5
-n_simulations = 10
+n_simulations = 1
 
 finalPVal = 0
 total_profit = 0
@@ -79,11 +79,11 @@ for _ in range(n_simulations):
         group = pd.concat([call_group, put_group])
 
         # Select top 5% trades
-        threshold = np.percentile(group['predicted_profit'], 99)
+        threshold = np.percentile(group['predicted_profit'], 90)
         candidates = group[group['predicted_profit'] >= threshold]
 
         for _, trade in candidates.iterrows():
-            if random.random() > 0.5:
+            if random.random() > 0.8:
                 continue
             cost = trade['opt_price'] 
             profit = trade['profit']
@@ -113,20 +113,61 @@ for _ in range(n_simulations):
     # plt.tight_layout()
     # plt.show()
 
-# Final metrics
+# Final metrics ## 
 avg_final_port_value = finalPVal / n_simulations
 avg_return = total_profit / n_simulations / starting_balance
 print("Average Final Portfolio Value: ", round(avg_final_port_value, 2))
 print("Average Return: ", round(avg_return * 100, 2), "%")
 
+# Load SPY data and normalize to starting value
+spy_df = pd.read_csv('SPY.csv')
+spy_df['date'] = pd.to_datetime(spy_df['date'])
+spy_df = spy_df.sort_values('date')
+
+# Match SPY dates to portfolio and interpolate if needed
+spy_df = spy_df[['date', 'close']]
+spy_df = spy_df.set_index('date').reindex(portfolio_df['date']).interpolate(method='time').reset_index()
+
+# Normalize SPY to same starting value as portfolio
+spy_df['spy_value'] = (spy_df['close'] / spy_df['close'].iloc[0]) * starting_balance
+
+# Merge both into a single DataFrame
+comparison_df = portfolio_df.copy()
+comparison_df['spy_value'] = spy_df['spy_value'].values
+
+# Calculate percentage returns
+comparison_df['portfolio_return'] = (comparison_df['portfolio_value'] - starting_balance) / starting_balance * 100
+comparison_df['spy_return'] = (comparison_df['spy_value'] - starting_balance) / starting_balance * 100
+
+# Plot 1: Absolute portfolio vs SPY value
 plt.figure(figsize=(12, 6))
-plt.plot(portfolio_df['date'], portfolio_df['portfolio_value'], label='Portfolio Value', color='blue')
-plt.title('Simulated Portfolio Performance ($25,000 Starting Value, with 70% Cash Reserve)')
+plt.plot(comparison_df['date'], comparison_df['portfolio_value'], label='Portfolio Value', color='blue')
+plt.plot(comparison_df['date'], comparison_df['spy_value'], label='SPY Investment Value', color='green', linestyle='--')
+plt.title('Portfolio vs SPY - Absolute Value')
 plt.xlabel('Date')
-plt.ylabel('Portfolio Value')
-plt.grid(True)
+plt.ylabel('Value ($)')
 plt.legend()
+plt.grid(True)
 plt.tight_layout()
 plt.show()
+
+# Plot 2: Percentage return comparison
+plt.figure(figsize=(12, 6))
+plt.plot(comparison_df['date'], comparison_df['portfolio_return'], label='Portfolio % Return', color='blue')
+plt.plot(comparison_df['date'], comparison_df['spy_return'], label='SPY % Return', color='green', linestyle='--')
+plt.title('Portfolio vs SPY - Percentage Return')
+plt.xlabel('Date')
+plt.ylabel('% Return')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
 
 
