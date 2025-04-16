@@ -1,4 +1,3 @@
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -50,6 +49,7 @@ for _ in range(n_simulations):
                 trade_total = profit + trade['cost'] 
                 available_investment += trade_total
                 open_trades.remove(trade)
+            
 
         # Recalculate portfolio state
         tied_up = sum(t['cost'] for t in open_trades)
@@ -103,6 +103,9 @@ for _ in range(n_simulations):
     finalPVal += portfolio_value
     total_profit += portfolio_value - starting_balance
     portfolio_df = pd.DataFrame(portfolio_over_time).sort_values('date')
+
+    # baseline_trades = group[(group['delta'].abs() > 0.85) & (group['vol'] > group['vol'].median()) ]
+    # baseline_profit = baseline_trades['profit'].sum()
     # plt.figure(figsize=(12, 6))
     # plt.plot(portfolio_df['date'], portfolio_df['portfolio_value'], label='Portfolio Value', color='green')
     # plt.title('Simulated Portfolio Performance ($10,000 Starting Value, and maintaining a 50% Cash Reserve)')
@@ -112,6 +115,8 @@ for _ in range(n_simulations):
     # plt.legend()
     # plt.tight_layout()
     # plt.show()
+
+
 
 # Final metrics ## 
 avg_final_port_value = finalPVal / n_simulations
@@ -139,9 +144,22 @@ comparison_df['spy_value'] = spy_df['spy_value'].values
 comparison_df['portfolio_return'] = (comparison_df['portfolio_value'] - starting_balance) / starting_balance * 100
 comparison_df['spy_return'] = (comparison_df['spy_value'] - starting_balance) / starting_balance * 100
 
-# Plot 1: Absolute portfolio vs SPY value
+# Calculate cumulative baseline profit
+def calculate_baseline_value(d):
+    return sum(
+        group[(group['delta'].abs() > 0.85) & (group['vol'] > group['vol'].median())]['profit'].sum()
+        for date, group in df.groupby('date') if date <= d
+    )
+
+# Apply the function to calculate baseline values
+portfolio_df['baseline_value'] = portfolio_df['date'].apply(calculate_baseline_value)
+comparison_df['baseline_return'] = (portfolio_df['baseline_value'] - starting_balance) / starting_balance * 100
+
+# Plot 1: Absolute portfolio vs SPY value with baseline
 plt.figure(figsize=(12, 6))
-plt.plot(portfolio_df['date'], portfolio_df['portfolio_value'], label='Portfolio Value', color='green')
+plt.plot(portfolio_df['date'], portfolio_df['portfolio_value'], label='Portfolio Value', color='green', linewidth=2)
+plt.plot(portfolio_df['date'], spy_df['spy_value'], label='SPY Value', color='blue', linestyle='--', linewidth=2)
+plt.plot(portfolio_df['date'], portfolio_df['baseline_value'], label='Baseline Value', color='orange', linestyle='-.', linewidth=2)
 plt.title('Simulated Portfolio Performance ($10,000 Starting Value, and maintaining a 50% Cash Reserve)')
 plt.xlabel('Date')
 plt.ylabel('Value ($)')
@@ -150,10 +168,11 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-# Plot 2: Percentage return comparison
+# Plot 2: Percentage return comparison with baseline
 plt.figure(figsize=(12, 6))
-plt.plot(comparison_df['date'], comparison_df['portfolio_return'], label='Portfolio % Return', color='blue')
-plt.plot(comparison_df['date'], comparison_df['spy_return'], label='SPY % Return', color='green', linestyle='--')
+plt.plot(comparison_df['date'], comparison_df['portfolio_return'], label='Portfolio % Return', color='blue', linewidth=2)
+plt.plot(comparison_df['date'], comparison_df['spy_return'], label='SPY % Return', color='green', linestyle='--', linewidth=2)
+plt.plot(comparison_df['date'], comparison_df['baseline_return'], label='Baseline % Return', color='orange', linestyle='-.', linewidth=2)
 plt.title('Portfolio vs SPY - Percentage Return')
 plt.xlabel('Date')
 plt.ylabel('% Return')
@@ -161,12 +180,3 @@ plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.show()
-
-
-
-
-
-
-
-
-

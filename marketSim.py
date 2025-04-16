@@ -109,22 +109,22 @@ daily_profits_df['cumulative_cost'] = daily_profits_df['cost'].cumsum()
 daily_profits_df['cumulative_return_percent'] = (daily_profits_df['cumulative_actual_profit'] / daily_profits_df['cumulative_cost']) * 100
 
 
-def plot_cumulative_profits(daily_profits_df):
-    daily_profits_df['date'] = pd.to_datetime(daily_profits_df['date'])
-    daily_profits_df = daily_profits_df.sort_values('date')
-    daily_profits_df['cumulative_actual_profit'] = daily_profits_df['actual_profit'].cumsum()
-    daily_profits_df['cumulative_baseline_profit'] = daily_profits_df['baseline_profit'].cumsum()
+# def plot_cumulative_profits(daily_profits_df):
+#     daily_profits_df['date'] = pd.to_datetime(daily_profits_df['date'])
+#     daily_profits_df = daily_profits_df.sort_values('date')
+#     daily_profits_df['cumulative_actual_profit'] = daily_profits_df['actual_profit'].cumsum()
+#     daily_profits_df['cumulative_baseline_profit'] = daily_profits_df['baseline_profit'].cumsum()
 
-    plt.figure(figsize=(12, 6))
-    plt.plot(daily_profits_df['date'], daily_profits_df['cumulative_actual_profit'], label='Agent Cumulative Profit')
-    plt.plot(daily_profits_df['date'], daily_profits_df['cumulative_baseline_profit'], label='Baseline Cumulative Profit', linestyle='--')
-    plt.xlabel('Date')
-    plt.ylabel('Cumulative Profit')
-    plt.title('Cumulative Profit Over Time')
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+#     plt.figure(figsize=(12, 6))
+#     plt.plot(daily_profits_df['date'], daily_profits_df['cumulative_actual_profit'], label='Agent Cumulative Profit')
+#     plt.plot(daily_profits_df['date'], daily_profits_df['cumulative_baseline_profit'], label='Baseline Cumulative Profit', linestyle='--')
+#     plt.xlabel('Date')
+#     plt.ylabel('Cumulative Profit')
+#     plt.title('Cumulative Profit Over Time')
+#     plt.legend()
+#     plt.grid(True)
+#     plt.tight_layout()
+#     plt.show()
 
 
 import seaborn as sns
@@ -137,7 +137,9 @@ import matplotlib.pyplot as plt
 daily_profits_df["profit_cat"] = daily_profits_df["actual_profit"].apply(lambda x: "pos" if x > 0 else "neg")
 
 sns.countplot(x="profit_cat", data=daily_profits_df, order=['pos','neg'],palette="Set2")
-plt.title("P/L Distribution")
+plt.title("Post-Model Profit Distribution")
 plt.xlabel("Profit Category")
-plt.ylabel("Count of Days")
+plt.ylabel("Count")
 plt.show()
+
+# plot_cumulative_profits(daily_profits_df)
