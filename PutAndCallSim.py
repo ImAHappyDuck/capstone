@@ -83,7 +83,7 @@ for _ in range(n_simulations):
         candidates = group[group['predicted_profit'] >= threshold]
 
         for _, trade in candidates.iterrows():
-            if random.random() > 0.5:
+            if random.random() > 0.8:
                 continue
             cost = trade['opt_price'] 
             profit = trade['profit']
@@ -113,20 +113,60 @@ for _ in range(n_simulations):
     # plt.tight_layout()
     # plt.show()
 
-# Final metrics
+# Final metrics ## 
 avg_final_port_value = finalPVal / n_simulations
 avg_return = total_profit / n_simulations / starting_balance
 print("Average Final Portfolio Value: ", round(avg_final_port_value, 2))
 print("Average Return: ", round(avg_return * 100, 2), "%")
 
+# Load SPY data and normalize to starting value
+spy_df = pd.read_csv('SPY.csv')
+spy_df['date'] = pd.to_datetime(spy_df['date'])
+spy_df = spy_df.sort_values('date')
+
+# Match SPY dates to portfolio and interpolate if needed
+spy_df = spy_df[['date', 'close']]
+spy_df = spy_df.set_index('date').reindex(portfolio_df['date']).interpolate(method='time').reset_index()
+
+# Normalize SPY to same starting value as portfolio
+spy_df['spy_value'] = (spy_df['close'] / spy_df['close'].iloc[0]) * starting_balance
+
+# Merge both into a single DataFrame
+comparison_df = portfolio_df.copy()
+comparison_df['spy_value'] = spy_df['spy_value'].values
+
+# Calculate percentage returns
+comparison_df['portfolio_return'] = (comparison_df['portfolio_value'] - starting_balance) / starting_balance * 100
+comparison_df['spy_return'] = (comparison_df['spy_value'] - starting_balance) / starting_balance * 100
+
+# Plot 1: Absolute portfolio vs SPY value
 plt.figure(figsize=(12, 6))
 plt.plot(portfolio_df['date'], portfolio_df['portfolio_value'], label='Portfolio Value', color='green')
 plt.title('Simulated Portfolio Performance ($10,000 Starting Value, and maintaining a 50% Cash Reserve)')
 plt.xlabel('Date')
-plt.ylabel('Portfolio Value')
-plt.grid(True)
+plt.ylabel('Value ($)')
 plt.legend()
+plt.grid(True)
 plt.tight_layout()
 plt.show()
+
+# Plot 2: Percentage return comparison
+plt.figure(figsize=(12, 6))
+plt.plot(comparison_df['date'], comparison_df['portfolio_return'], label='Portfolio % Return', color='blue')
+plt.plot(comparison_df['date'], comparison_df['spy_return'], label='SPY % Return', color='green', linestyle='--')
+plt.title('Portfolio vs SPY - Percentage Return')
+plt.xlabel('Date')
+plt.ylabel('% Return')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
 
 
