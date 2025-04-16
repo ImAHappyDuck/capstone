@@ -109,23 +109,24 @@ daily_profits_df['cumulative_cost'] = daily_profits_df['cost'].cumsum()
 daily_profits_df['cumulative_return_percent'] = (daily_profits_df['cumulative_actual_profit'] / daily_profits_df['cumulative_cost']) * 100
 
 
-# def plot_cumulative_profits(daily_profits_df):
-#     daily_profits_df['date'] = pd.to_datetime(daily_profits_df['date'])
-#     daily_profits_df = daily_profits_df.sort_values('date')
-#     daily_profits_df['cumulative_actual_profit'] = daily_profits_df['actual_profit'].cumsum()
-#     daily_profits_df['cumulative_baseline_profit'] = daily_profits_df['baseline_profit'].cumsum()
+def plot_cumulative_profits(daily_profits_df):
+    daily_profits_df['date'] = pd.to_datetime(daily_profits_df['date'])
+    daily_profits_df = daily_profits_df.sort_values('date')
+    daily_profits_df['cumulative_actual_profit'] = daily_profits_df['actual_profit'].cumsum()
+    daily_profits_df['cumulative_baseline_profit'] = daily_profits_df['baseline_profit'].cumsum()
 
-#     plt.figure(figsize=(12, 6))
-#     plt.plot(daily_profits_df['date'], daily_profits_df['cumulative_actual_profit'], label='Agent Cumulative Profit')
-#     plt.plot(daily_profits_df['date'], daily_profits_df['cumulative_baseline_profit'], label='Baseline Cumulative Profit', linestyle='--')
-#     plt.xlabel('Date')
-#     plt.ylabel('Cumulative Profit')
-#     plt.title('Cumulative Profit Over Time')
-#     plt.legend()
-#     plt.grid(True)
-#     plt.tight_layout()
-#     plt.show()
+    plt.figure(figsize=(12, 6))
+    plt.plot(daily_profits_df['date'], daily_profits_df['cumulative_actual_profit'], label='Agent Cumulative Profit')
+    plt.plot(daily_profits_df['date'], daily_profits_df['cumulative_baseline_profit'], label='Baseline Cumulative Profit', linestyle='--')
+    plt.xlabel('Date')
+    plt.ylabel('Cumulative Profit')
+    plt.title('Cumulative Profit Over Time')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
+plot_cumulative_profits(daily_profits_df)
 
 import seaborn as sns
 
