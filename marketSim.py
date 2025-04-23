@@ -136,8 +136,17 @@ import matplotlib.pyplot as plt
 
 daily_profits_df["profit_cat"] = daily_profits_df["actual_profit"].apply(lambda x: "pos" if x > 0 else "neg")
 
-sns.countplot(x="profit_cat", data=daily_profits_df, order=['pos','neg'],palette="Set2")
+
+#profit_col = daily_profits_df[(daily_profits_df["actual_profit"] > -100) & (daily_profits_df["actual_profit"] < 100)]["actual_profit"]
+profit_col = daily_profits_df["actual_profit"]
+sns.histplot(profit_col, color="green", binrange=(-15000,15000), binwidth=3000)
 plt.title("Post-Model Profit Distribution")
+plt.xlabel("Profit ($)")
+plt.ylabel("Count")
+plt.show()
+
+sns.countplot(x="profit_cat", data=daily_profits_df, order=['pos','neg'],palette="Set2")
+plt.title("Post-Model Categorical Profit Distribution")
 plt.xlabel("Profit Category")
 plt.ylabel("Count")
 plt.show()
