@@ -27,7 +27,7 @@ df = df.sort_values('date')
 # Simulation settings
 starting_balance = 10000
 cashReserveRate = 0.3
-n_simulations = 10
+n_simulations = 1
 
 finalPVal = 0
 total_profit = 0
