@@ -1,34 +1,29 @@
 import pandas as pd
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import time
+import pandas as pd
+import zipfile
+from datetime import timedelta
 
-# Start timing
 start_time = time.time()
 
-# Load the data
-print("Loading dataset...")
+
 df = pd.read_csv('cleanedFinNews.csv', dtype=str).fillna('')
 
-# Create a single analyzer instance to reuse
 analyzer = SentimentIntensityAnalyzer()
 
-# Define columns to analyze
 columns_to_iterate = [df.columns[2]] + list(df.columns[6:])
 print(f"Analyzing sentiment for columns: {columns_to_iterate}")
 
-# Define more efficient functions that use the shared analyzer
 def calculate_sentiment_scores(text):
     return analyzer.polarity_scores(text)
 
-# Pre-calculate all sentiment scores at once
-print(f"Processing {len(df)} rows...")
-
-# Initialize result columns
+print(f"evaluating {len(df)} rows")
 df['pos_score']= 0.0
 df['neg_score']= 0.0
 df['neu_score']= 0.0
 
-# Process in batches for better performance feedback
+##chunks
 batch_size = 1000
 total_rows = len(df)
 
@@ -66,9 +61,6 @@ print(f"Completed in {execution_time:.2f} seconds")
 
 
 
-import pandas as pd
-import zipfile
-from datetime import timedelta
 
 def get_stock_price(stock_data_dict, target_date):
     if target_date in stock_data_dict:
@@ -87,15 +79,12 @@ def calculate_stock_delta(stock_data_dict, current_date):
 
     # Convert string keys to timestamps for proper comparison
     stock_data_dict = {pd.to_datetime(date): price for date, price in stock_data_dict.items()}
-
     sixty_days_ago = current_date - timedelta(days=60)
-    
-    # Find the closest date before sixty_days_ago
     past_dates = [date for date in stock_data_dict if date <= sixty_days_ago]
     if not past_dates:
         return None
 
-    closest_past_date = max(past_dates)  # Latest past date before threshold
+    closest_past_date = max(past_dates)  ##when a date fell on a weekend or market closed day, we find the next available market data. 
     past_price = stock_data_dict[closest_past_date]
     current_price = stock_data_dict.get(current_date, None)
 
@@ -233,11 +222,10 @@ for ticker, stock_data in price_cache.items():
 stock_delta_df = pd.DataFrame(stock_delta_list)
 
 # Merge precomputed deltas into `result` instead of applying row-by-row
-result = result.merge(stock_delta_df, on=['act_symbol', 'date'], how='left')
+result = result.merge(stock_delta_df, on=['act_symbol','date'],how='left')
 
 
 
-# Classify as ITM/OTM/ATM only for rows with calculated moneyness
 result['position']= 'Unknown'
 moneyness_mask = result['moneyness'].notna()
 result.loc[moneyness_mask & (result['moneyness'] > 0),'position']= 'ITM'
@@ -249,7 +237,7 @@ profit_mask = result['moneyness'].notna() & result['opt_price'].notna()
 
 result.loc[profit_mask,'profit']= result.loc[profit_mask,'moneyness'] - result.loc[profit_mask,'opt_price']
 print(result[['act_symbol','expiration','strike','call_put','close_price','moneyness','position','opt_price','profit']].head(10))
-result.to_csv('cleaned_optData_with_prices.csv', index=False)
+result.to_csv('cleaned_optData_with_prices.csv',index=False)
 print(f"Saved data with {result['close_price'].notna().sum()} price points to cleaned_optData_with_prices.csv")
 
 
@@ -268,39 +256,38 @@ zip_file_path = 'full_history.zip'
 price_cache = {}
 
 # Extract unique tickers and expiration dates
-all_pairs = df2[['act_symbol', 'expiration']].drop_duplicates().reset_index(drop=True)
+all_pairs = df2[['act_symbol','expiration']].drop_duplicates().reset_index(drop=True)
 all_pairs['close_price'] = None
 
-with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
+with zipfile.ZipFile(zip_file_path,'r') as zip_file:
     zip_file_list = zip_file.namelist()
     tickers = {f.split('/')[-1].split('.')[0] for f in zip_file_list if f.startswith('full_history/') and f.endswith('.csv')}
     
-    for ticker in tqdm.tqdm(df2['act_symbol'].unique(), desc='Loading Stock Data'):
+    for ticker in tqdm.tqdm(df2['act_symbol'].unique(),desc='Loading Stock Data'):
         ticker_file = f"full_history/{ticker}.csv"
         if ticker_file in zip_file_list:
             try:
                 with zip_file.open(ticker_file) as file:
-                    stock_data = pd.read_csv(file, parse_dates=['date'])
-                    price_cache[ticker] = dict(zip(stock_data['date'], stock_data['close']))
+                    stock_data = pd.read_csv(file,parse_dates=['date'])
+                    price_cache[ticker] = dict(zip(stock_data['date'],stock_data['close']))
             except Exception as e:
                 print(f"Error reading {ticker_file}: {e}")
         else:
             print(f"File for ticker {ticker} not found in ZIP archive")
 
-# Assign stock prices
 df2['current_stock_price'] = None
-df2['stock_price_at_expiration'] = None
+df2['stock_price_at_expiration'] =None
 
-for index, row in tqdm.tqdm(df2.iterrows(), total=len(df2), desc='Assigning Stock Prices'):
-    ticker, option_date, exp_date = row['act_symbol'], row['date'], row['expiration']
+for index,row in tqdm.tqdm(df2.iterrows(),total=len(df2),desc='Assigning Stock Prices'):
+    ticker,option_date,exp_date = row['act_symbol'],row['date'],row['expiration']
     
     if ticker in price_cache:
         stock_data = price_cache[ticker]
 
         # Get stock price on the option's date
-        current_price = stock_data.get(option_date, None)
+        current_price = stock_data.get(option_date,None)
         if current_price is None:
-            for days_back in range(1, 5):
+            for days_back in range(1,5):
                 current_price = stock_data.get(option_date - timedelta(days=days_back), None)
                 if current_price:
                     break
