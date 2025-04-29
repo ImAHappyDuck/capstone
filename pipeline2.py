@@ -2,8 +2,11 @@ import pandas as pd
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import time
 import pandas as pd
-import zipfile
 from datetime import timedelta
+import zipfile
+import tqdm
+import os
+
 
 start_time = time.time()
 
@@ -23,38 +26,39 @@ df['pos_score']= 0.0
 df['neg_score']= 0.0
 df['neu_score']= 0.0
 
+
+
+
 ##chunks
 batch_size = 1000
 total_rows = len(df)
 
+
+
 for start_idx in range(0, total_rows, batch_size):
     end_idx = min(start_idx + batch_size, total_rows)
     print(f"Processing rows {start_idx} to {end_idx} of {total_rows}...")
-    
-    # Process each row in the current batch
     for idx in range(start_idx, end_idx):
         pos_sum = 0
         neg_sum = 0
         neu_sum = 0
         
-        # Process each text column for this row
         for col in columns_to_iterate:
-            # Get sentiment scores once for this text
+            # Get sentiment scores only once for this text
             sentiment = calculate_sentiment_scores(df.iloc[idx][col])
             pos_sum += sentiment['pos']
             neg_sum += sentiment['neg']
             neu_sum += sentiment['neu']
-        
-        # Store average scores
         df.loc[idx,'pos_score']= pos_sum / len(columns_to_iterate)
         df.loc[idx,'neg_score']= neg_sum / len(columns_to_iterate)
         df.loc[idx,'neu_score']= neu_sum / len(columns_to_iterate)
 
-# Save results
-print("Saving results...")
+# print("Saving results")
 df.to_csv('cleanedFinNews.csv', index=False)
+print("saved")
 
-# Calculate and display execution time
+
+##Time for test purposes. ====
 end_time = time.time()
 execution_time = end_time - start_time
 print(f"Completed in {execution_time:.2f} seconds")
@@ -241,10 +245,6 @@ result.to_csv('cleaned_optData_with_prices.csv',index=False)
 print(f"Saved data with {result['close_price'].notna().sum()} price points to cleaned_optData_with_prices.csv")
 
 
-import pandas as pd
-import zipfile
-import tqdm
-from datetime import timedelta
 
 # Load the options data
 df2 = pd.read_csv('cleaned_optData.csv')
@@ -293,7 +293,10 @@ for index,row in tqdm.tqdm(df2.iterrows(),total=len(df2),desc='Assigning Stock P
                     break
         df2.at[index, 'current_stock_price'] = current_price
 
-        # Get stock price at expiration
+    ## print(ticker,option_date,exp_date)
+
+
+
         expiration_price = stock_data.get(exp_date, None)
         if expiration_price is None:
             for days_back in range(1, 5):
@@ -302,19 +305,18 @@ for index,row in tqdm.tqdm(df2.iterrows(),total=len(df2),desc='Assigning Stock P
                     break
         df2.at[index, 'stock_price_at_expiration'] = expiration_price
 
-# Compute moneyness
 df2['moneyness'] = None
 call_mask = (df2['call_put'] == 'Call') & df2['stock_price_at_expiration'].notna()
 put_mask = (df2['call_put'] == 'Put') & df2['stock_price_at_expiration'].notna()
 df2.loc[call_mask, 'moneyness'] = df2.loc[call_mask, 'stock_price_at_expiration'] - df2.loc[call_mask, 'strike']
 df2.loc[put_mask, 'moneyness'] = df2.loc[put_mask, 'strike'] - df2.loc[put_mask, 'stock_price_at_expiration']
 
-# Compute ITM/OTM/ATM classification
-df2['position'] = 'Unknown'
-moneyness_mask = df2['moneyness'].notna()
-df2.loc[moneyness_mask & (df2['moneyness'] > 0), 'position'] = 'ITM'
-df2.loc[moneyness_mask & (df2['moneyness'] < 0), 'position'] = 'OTM'
-df2.loc[moneyness_mask & (df2['moneyness'].fillna(0).abs() < 0.01), 'position'] = 'ATM'
+##Possibly useful, but never used. 
+# df2['position'] = 'Unknown'
+# moneyness_mask = df2['moneyness'].notna()
+# df2.loc[moneyness_mask & (df2['moneyness'] > 0), 'position'] = 'ITM'
+# df2.loc[moneyness_mask & (df2['moneyness'] < 0), 'position'] = 'OTM'
+# df2.loc[moneyness_mask & (df2['moneyness'].fillna(0).abs() < 0.01), 'position'] = 'ATM'
 
 # Compute option price
 df2['opt_price'] = (df2['bid'] + df2['ask']) / 2
@@ -333,39 +335,50 @@ if os.path.exists(delta_progress_file):
 else:
     existing_stock_deltas = pd.DataFrame(columns=['act_symbol', 'date', 'stock_delta_60days'])
 
-# Convert to a set for fast lookups
+
+##speed optimization. 
 existing_pairs = set(zip(existing_stock_deltas['act_symbol'], existing_stock_deltas['date']))
 
-print("Calculating stock deltas...")
+print("Calculating stock delts")
 stock_delta_list = []
 
 for ticker, stock_data in tqdm.tqdm(price_cache.items(), desc='Processing Stock Deltas'):
     dates = sorted(stock_data.keys())
 
+
     for i, date in enumerate(dates):
-        if (ticker, date) in existing_pairs:  # Skip if already computed
+
+
+        if (ticker, date) in existing_pairs:  
             continue
 
         past_date = date - timedelta(days=60)
         past_prices = [stock_data[d] for d in dates[:i] if d <= past_date]
 
-        if past_prices and past_prices[-1] != 0:  # Avoid division by zero
+        if past_prices and past_prices[-1] != 0: 
             delta = ((stock_data[date] - past_prices[-1]) / past_prices[-1]) * 100
         else:
             delta = None  
 
         stock_delta_list.append({'act_symbol': ticker, 'date': date, 'stock_delta_60days': delta})
 
-        # Save progress every 500 entries
+        
         if len(stock_delta_list) >= 500:
             temp_df = pd.DataFrame(stock_delta_list)
             temp_df.to_csv(delta_progress_file, mode='a', header=not os.path.exists(delta_progress_file), index=False)
-            stock_delta_list.clear()  # Clear memory
+            stock_delta_list.clear()  
 
-# Save any remaining results
+
+
+
+
 if stock_delta_list:
     temp_df = pd.DataFrame(stock_delta_list)
     temp_df.to_csv(delta_progress_file, mode='a', header=not os.path.exists(delta_progress_file), index=False)
+
+
+
+
 
 # Load final delta results and merge with df2
 stock_delta_df = pd.read_csv(delta_progress_file)
@@ -373,8 +386,6 @@ stock_delta_df['date'] = pd.to_datetime(stock_delta_df['date'])
 df2 = df2.merge(stock_delta_df, on=['act_symbol', 'date'], how='left')
 df2['opt_price'] = (df2['bid'] + df2['ask'])/2
 
-
-# Save results
 df2.to_csv('cleaned_optData_with_prices.csv', index=False)
 print(f"Saved {df2.shape[0]} rows to cleaned_optData_with_prices.csv")
 print("now adding sentiment score to the cleaned_optData_with_prices.csv")
