@@ -2,7 +2,30 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import warnings
+import numpy as np
 warnings.filterwarnings("ignore")
+
+
+data = pd.read_csv("NewestDataset.csv").dropna()
+
+X = data.select_dtypes(include=[np.number]) 
+X = X.drop(columns=['profit', 'moneyness', 'stock_price_at_expiration'], errors='ignore')  
+features = X.columns.tolist()
+import joblib
+callModel = joblib.load("callModel.pkl")
+
+
+importances = callModel.feature_importances_
+feat_df = pd.DataFrame({'Feature': features, 'Importance': importances})
+feat_df = feat_df.sort_values(by="Importance", ascending=False)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x="Importance", y="Feature", data=feat_df)
+plt.title("Feature Importances from Random Forest")
+plt.show()
+
+
+
 
 data = pd.read_csv("NewestDataset.csv").dropna()
 data["profit_cat"] = data["profit"].apply(lambda x: "pos" if x > 0 else "neg")

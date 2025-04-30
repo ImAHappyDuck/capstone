@@ -12,6 +12,13 @@ import argparse
 df = pd.read_csv('train.csv')
 
 df = df.dropna()
+
+### This line decreases R^2 by almost .05, but probably improves integrity. 
+# It wasn't until writing the report I noticed this was a feature, so we will stick with our first version 
+# statistics.  
+df= df.drop(columns=['Unnamed: 0', 'Unnamed: 0.1'], errors='ignore')
+
+
 df = df[df['call_put'] == 'Call']
 X = df.select_dtypes(include=[np.number]) 
 X = X.drop(columns=['profit', 'moneyness', 'stock_price_at_expiration'], errors='ignore')  
@@ -25,7 +32,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 # model.fit(X_train, y_train)
 model = RandomForestRegressor(n_estimators=25, max_depth=10, random_state=27)
 model.fit(X_train, y_train)
-model.feature_names_in_ = X.columns
+# model.feature_names_in_ = X.columns
 
 
 y_pred = model.predict(X_test)
