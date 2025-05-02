@@ -53,6 +53,8 @@ from scipy.optimize import brentq
 df = df[df['call_put'].isin(['Call','Put'])].copy()
 
 
+
+
 def black_scholes_price(S,K,T,r,sigma,option_type='call'):
     if T <= 0 or S <= 0 or K <= 0 or sigma <= 0:
         return 0
@@ -69,13 +71,12 @@ def implied_volatility(S,K,T,r,market_price,option_type='call'):
     try:
         return brentq(
             lambda sigma: black_scholes_price(S,K,T,r,sigma,option_type) - market_price,
-            1e-6,5.0  # bounds for sigma (IV)
+            1e-6,5.0  
         )
     except (ValueError,RuntimeError):
         return np.nan
 
 def add_implied_volatility(df,risk_free_rate=0.0431):
-    # Convert dates
     df['date'] = pd.to_datetime({
     'year': df['date_year'],
     'month': df['date_month'],

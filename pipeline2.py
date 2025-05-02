@@ -80,8 +80,8 @@ def get_stock_price(stock_data_dict, target_date):
 def calculate_stock_delta(stock_data_dict, current_date):
     if not stock_data_dict:
         return None
+    
 
-    # Convert string keys to timestamps for proper comparison
     stock_data_dict = {pd.to_datetime(date): price for date, price in stock_data_dict.items()}
     sixty_days_ago = current_date - timedelta(days=60)
     past_dates = [date for date in stock_data_dict if date <= sixty_days_ago]
@@ -157,16 +157,13 @@ with zipfile.ZipFile(zip_file_path,'r') as zip_file:
         else:
             print(f"No price data found for {ticker} on or near {expiration_date}")
 
-# After finding prices
 print(f"Found prices for {all_pairs['close_price'].notna().sum()} out of {len(all_pairs)} ticker/expiration pairs")
 
-# Check columns in all_pairs before merge
+##Check columns in all_pairs before merge
 print(f"Columns in all_pairs: {all_pairs.columns.tolist()}")
 
-# Merge once and do it correctly
 result = pd.merge(df2, all_pairs, on=['act_symbol','expiration'], how='left')
 
-# Verify the merge worked and check for the close_price column
 print(f"Columns in result after merge: {result.columns.tolist()}")
 print(f"Number of rows with close_price not null: {result['close_price'].notna().sum()}")
 

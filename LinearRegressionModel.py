@@ -19,7 +19,7 @@ df = df.dropna()
 df= df.drop(columns=['Unnamed: 0', 'Unnamed: 0.1'], errors='ignore')
 
 
-df = df[df['call_put'] == 'Call']
+df = df[df['call_put'] == 'Put']
 X = df.select_dtypes(include=[np.number]) 
 X = X.drop(columns=['profit', 'moneyness', 'stock_price_at_expiration'], errors='ignore')  
 y = df['profit']
@@ -62,6 +62,6 @@ print(f"Random Baseline Profit: {average}")
 y_pred = model.predict(X_test)
 average_projected_profit = np.mean(y_pred)
 print(f"Projected Profit: {average_projected_profit:.4f}")
-joblib.dump(model, 'callModel.pkl')
+joblib.dump(model, 'putModel.pkl')
 
 
