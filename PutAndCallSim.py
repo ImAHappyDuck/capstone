@@ -1,4 +1,3 @@
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,17 +6,18 @@ import random
 
 # Load data
 df = pd.read_csv('test.csv')
+
 df['call_put'] = df['call_put'].map({'Call': 1, 'Put': 0})  # 1 = Call, 0 = Put
 df = df[df['vol'] >0]
 df['opt_price'] = df['opt_price'] *100
 df['profit'] = df['profit'] * 100
 
-
 CallModel = joblib.load('callModel.pkl')
 PutModel = joblib.load('putModel.pkl')
 
-features = CallModel.feature_names_in_
-df = df.dropna(subset=features)
+call_features = CallModel.feature_names_in_
+put_features = PutModel.feature_names_in_
+df = df.dropna(subset=list(set(call_features) | set(put_features)))
 df['date'] = pd.to_datetime(df['date'])
 df['expiration'] = pd.to_datetime(df['expiration'])
 df = df.sort_values('date')
@@ -60,14 +60,14 @@ for _ in range(n_simulations):
         if group.empty:
             continue
 
-        call_group = group[group['call_put'] == 1]
-        put_group = group[group['call_put'] == 0]
+        call_group = group[group['call_put'] == 1].copy()
+        put_group = group[group['call_put'] == 0].copy()
 
         if not call_group.empty:
-            X_call = call_group[features]
+            X_call = call_group[call_features]
             call_group['predicted_profit'] = CallModel.predict(X_call)
         if not put_group.empty:
-            X_put = put_group[features]
+            X_put = put_group[put_features]
             put_group['predicted_profit'] = PutModel.predict(X_put)
 
         group = pd.concat([call_group, put_group])
@@ -81,7 +81,6 @@ for _ in range(n_simulations):
                 continue
             cost = trade['opt_price'] 
             profit = trade['profit']
-            # print(trade)
 
             if available_investment >= cost:
                 available_investment -= cost
@@ -109,8 +108,6 @@ for _ in range(n_simulations):
     # plt.legend()
     # plt.tight_layout()
     # plt.show()
-
-
 
 # Final metrics ## 
 avg_final_port_value = finalPVal / n_simulations
@@ -156,12 +153,3 @@ plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.show()
-
-
-
-
-
-
-
-
-
